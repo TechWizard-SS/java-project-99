@@ -1,0 +1,13 @@
+spring:
+  profiles:
+    active: development # По умолчанию запускаем дев-версию
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+
+server:
+  port: 7070

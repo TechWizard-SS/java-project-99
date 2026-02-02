@@ -1,0 +1,26 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:project;DB_CLOSE_DELAY=-1
+    username:
+    password:
+    driver-class-name: org.h2.Driver
+  h2:
+    console:
+      enabled: true
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    defer-datasource-initialization: true
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  security:
+    jwt:
+      secret: "yourVeryLongAndRandomSecretKeyHere1234567890ABCDEF1234567890GHIJKLMNOP" # Любой длинный ключ
+      expiration: 3600000 # Время жизни токена в миллисекундах
+
+  logging:
+    level:
+      root: INFO
+      org.springframework.web: INFO
+      org.hibernate: INFO

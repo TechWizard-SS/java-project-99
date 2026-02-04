@@ -1,28 +1,28 @@
 package hexlet.code.util;
 
-public class NamedRoutes {
+public final class NamedRoutes {
 
-    public static String userGetId (Long id) {
+    public static String userGetId(Long id) {
         return "/api/users/" + id;
     }
 
-    public static String getUsers () {
+    public static String getUsers() {
         return "/api/users";
     }
 
-    public static String userPost () {
+    public static String userPost() {
         return "/api/users";
     }
 
-    public static String userUpdate (Long id) {
+    public static String userUpdate(Long id) {
         return "/api/users/" + id;
     }
 
-    public static String userDelete (Long id) {
+    public static String userDelete(Long id) {
         return "/api/users/" + id;
     }
 
-    public static String login () {
+    public static String login() {
         return "/api/login";
     }
 

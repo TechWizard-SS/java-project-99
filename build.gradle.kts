@@ -3,6 +3,9 @@ plugins {
 	id("org.springframework.boot") version "3.5.10"
 	id("io.spring.dependency-management") version "1.1.7"
 	id("gg.jte.gradle") version "3.1.16"
+	id("jacoco")
+	checkstyle
+	id("org.sonarqube") version "6.2.0.5505"
 }
 
 group = "hexlet.code"
@@ -62,6 +65,28 @@ dependencies {
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
+checkstyle {
+	toolVersion = "10.12.1"
+	configFile = file("config/checkstyle/checkstyle.xml")
+	isIgnoreFailures = false
+	isShowViolations = true
+}
+
+sonar {
+	properties {
+		property("sonar.projectKey", "TechWizard-SS_java-project-99")
+		property("sonar.organization", "techwizard-ss")
+		property("sonar.host.url", "https://sonarcloud.io")
+	}
+}
+
+tasks.jacocoTestReport {
+	dependsOn(tasks.test)
+	reports {
+		xml.required.set(true)
+	}
+}
+
 jte {
 	generate()
 	binaryStaticContent = true
@@ -70,3 +95,4 @@ jte {
 tasks.withType<Test> {
 	useJUnitPlatform()
 }
+

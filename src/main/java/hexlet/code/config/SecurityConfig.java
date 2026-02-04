@@ -18,9 +18,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import static org.springframework.security.config.Customizer.withDefaults;
 
 /**
- * Конфигурационный класс для настройки безопасности Spring Security.
- * Определяет политику доступа к эндпоинтам, настраивает фильтрацию JWT токенов
- * и устанавливает обработчик ошибок аутентификации.
+ * Configuration class for security settings.
  */
 @Configuration
 @EnableWebSecurity
@@ -30,17 +28,17 @@ public class SecurityConfig {
     private final JwtRequestFilter jwtRequestFilter;
     private final MyUserDetailsService myUserDetailsService;
 
-    public SecurityConfig(JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint, JwtRequestFilter jwtRequestFilter, MyUserDetailsService myUserDetailsService) {
+    public SecurityConfig(JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint, JwtRequestFilter jwtRequestFilter,
+                          MyUserDetailsService myUserDetailsService) {
         this.jwtAuthenticationEntryPoint = jwtAuthenticationEntryPoint;
         this.jwtRequestFilter = jwtRequestFilter;
         this.myUserDetailsService = myUserDetailsService;
     }
 
     /**
-     * Бин для шифрования паролей.
-     * Используется при регистрации и аутентификации.
+     * Creates a bean for password encoding using BCrypt algorithm.
      *
-     * @return BCryptPasswordEncoder
+     * @return BCrypt password encoder
      */
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -48,17 +46,24 @@ public class SecurityConfig {
     }
 
     /**
-     * Бин для управления аутентификацией (например, через UsernamePasswordAuthenticationToken).
+     * Creates a bean for authentication manager.
      *
-     * @param authConfig Конфигурация аутентификации из Spring Boot.
-     * @return AuthenticationManager
-     * @throws Exception
+     * @param authConfig authentication configuration
+     * @return authentication manager
+     * @throws Exception if authentication manager cannot be created
      */
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
         return authConfig.getAuthenticationManager();
     }
 
+    /**
+     * Creates a bean for security filter chain with configured security rules.
+     *
+     * @param http http security builder
+     * @return configured security filter chain
+     * @throws Exception if filter chain cannot be built
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
@@ -69,13 +74,19 @@ public class SecurityConfig {
                         .requestMatchers("/api/users/**").authenticated()
                         .anyRequest().authenticated()
                 )
-                .authenticationProvider(authenticationProvider()) // Добавить провайдер
+                .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
+                .exceptionHandling(ex ->
+                        ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 .httpBasic(withDefaults())
                 .build();
     }
 
+    /**
+     * Creates a bean for authentication provider with user details service and password encoder.
+     *
+     * @return authentication provider
+     */
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();

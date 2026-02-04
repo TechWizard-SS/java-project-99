@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class DataLoader {
+public final class DataLoader {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;

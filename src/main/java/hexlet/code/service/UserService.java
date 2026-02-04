@@ -12,6 +12,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+/**
+ * Service class for managing users.
+ */
 @Service
 @Transactional(readOnly = true)
 public class UserService {
@@ -25,18 +28,37 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    /**
+     * Retrieves all users from the repository.
+     *
+     * @return list of user DTOs
+     */
     public List<UserDTO> getAll() {
         return userRepository.findAll().stream()
                 .map(userMapper::map)
                 .toList();
     }
 
+    /**
+     * Finds a user by ID.
+     *
+     * @param id the user ID
+     * @return user DTO
+     * @throws ResourceNotFoundException if user is not found
+     */
     public UserDTO findById(Long id) {
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found"));
         return userMapper.map(user);
     }
 
+    /**
+     * Creates a new user.
+     *
+     * @param userData the user data to create
+     * @return created user DTO
+     * @throws RuntimeException if email already exists
+     */
     @Transactional
     public UserDTO create(UserDTO userData) {
         if (userRepository.findByEmail(userData.getEmail()).isPresent()) {
@@ -50,6 +72,16 @@ public class UserService {
         return userMapper.map(user);
     }
 
+    /**
+     * Updates an existing user.
+     *
+     * @param userData     the user data to update
+     * @param id           the user ID
+     * @param currentEmail the email of the currently authenticated user
+     * @return updated user DTO
+     * @throws ResourceNotFoundException if user is not found
+     * @throws AccessDeniedException     if user tries to update another user's profile
+     */
     @Transactional
     public UserDTO update(UserDTO userData, Long id, String currentEmail) {
         var user = userRepository.findById(id)
@@ -72,6 +104,14 @@ public class UserService {
         return userMapper.map(user);
     }
 
+    /**
+     * Deletes a user by ID.
+     *
+     * @param id           the user ID
+     * @param currentEmail the email of the currently authenticated user
+     * @throws ResourceNotFoundException if user is not found
+     * @throws AccessDeniedException     if user tries to delete another user's profile
+     */
     @Transactional
     public void delete(Long id, String currentEmail) {
         var user = userRepository.findById(id)

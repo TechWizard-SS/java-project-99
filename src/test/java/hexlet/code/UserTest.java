@@ -17,9 +17,15 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+/**
+ * Test class for User controller.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
@@ -36,6 +42,10 @@ public class UserTest {
     private ObjectMapper om;
 
     private User testUser;
+
+    /**
+     * Setup method for tests.
+     */
 
     @BeforeEach
     public void setUp() {

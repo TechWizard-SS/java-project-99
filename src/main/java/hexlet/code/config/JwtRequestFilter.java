@@ -22,37 +22,19 @@ import java.io.IOException;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class JwtRequestFilter extends OncePerRequestFilter {
+public final class JwtRequestFilter extends OncePerRequestFilter {
 
     private final MyUserDetailsService userDetailsService;
     private final JwtUtil jwtUtil;
 
-    /**
-     * Определяет, нужно ли пропустить фильтрацию для текущего запроса.
-     * Фильтрация пропускается для эндпоинтов /api/auth/**, так как они не требуют токена.
-     *
-     * @param request HTTP-запрос.
-     * @return true, если фильтрация должна быть пропущена.
-     * @throws ServletException
-     */
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         AntPathMatcher pathMatcher = new AntPathMatcher();
-        return pathMatcher.match("/api/login", request.getServletPath()) ||
-                pathMatcher.match("/welcome", request.getServletPath());
+        return pathMatcher.match("/api/login", request.getServletPath())
+                || pathMatcher.match("/welcome", request.getServletPath());
     }
 
     @Override
-    /**
-     * Основной метод фильтрации.
-     * Извлекает токен, проверяет его, загружает пользователя и устанавливает аутентификацию.
-     *
-     * @param request     HTTP-запрос.
-     * @param response    HTTP-ответ.
-     * @param chain       Цепочка фильтров.
-     * @throws ServletException
-     * @throws IOException
-     */
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
 

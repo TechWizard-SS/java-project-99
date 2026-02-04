@@ -30,8 +30,13 @@ public final class JwtRequestFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         AntPathMatcher pathMatcher = new AntPathMatcher();
-        return pathMatcher.match("/api/login", request.getServletPath())
-                || pathMatcher.match("/welcome", request.getServletPath());
+        String path = request.getServletPath();
+        // Оставляем только то, что НЕ НУЖНО проверять никогда
+        return pathMatcher.match("/api/login", path)
+                || pathMatcher.match("/", path)
+                || pathMatcher.match("/index.html", path)
+                || pathMatcher.match("/favicon.ico", path)
+                || pathMatcher.match("/assets/**", path);
     }
 
     @Override

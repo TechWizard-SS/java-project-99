@@ -5,17 +5,19 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-import static org.springframework.security.config.Customizer.withDefaults;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 /**
  * Configuration class for security settings.
@@ -68,18 +70,47 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
+                .cors(Customizer.withDefaults()) // Включаем наш CORS конфиг (см. ниже)
+                .httpBasic(AbstractHttpConfigurer::disable) // Отключаем Basic Auth, чтобы не лезло окно браузера
+                // САМОЕ ВАЖНОЕ: Отключаем сессии. Только JWT!
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/login", "/welcome").permitAll()
+                        // Статика и логин
+                        .requestMatchers("/", "/index.html", "/assets/**", "/favicon.ico").permitAll()
+                        .requestMatchers("/api/login").permitAll()
+
+                        // Пользователи:
+                        // Создание и просмотр списка - всем (как у тебя было)
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
-                        .requestMatchers("/api/users/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/users").permitAll()
+
+                        // Всё остальное (UPDATE, DELETE, GET ONE) - только с токеном
                         .anyRequest().authenticated()
                 )
+                .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling(ex ->
-                        ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
-                .httpBasic(withDefaults())
                 .build();
+    }
+
+
+    // Этот бин нужен, чтобы фронтенд видел заголовок X-Total-Count и мог слать токены
+    /**
+     * Creates a bean for authentication provider with user details service and password encoder.
+     *
+     * @return CorsFilter
+     */
+    @Bean
+    public CorsFilter corsFilter() {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(true);
+        config.addAllowedOriginPattern("*"); // Или "http://localhost:*"
+        config.addAllowedHeader("*");
+        config.addAllowedMethod("*");
+        config.addExposedHeader("X-Total-Count"); // ВАЖНО для React Admin
+        source.registerCorsConfiguration("/**", config);
+        return new CorsFilter(source);
     }
 
     /**
@@ -90,7 +121,7 @@ public class SecurityConfig {
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService((UserDetailsService) myUserDetailsService);
+        authProvider.setUserDetailsService(myUserDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }

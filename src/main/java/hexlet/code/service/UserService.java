@@ -88,9 +88,9 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         // Проверка прав. Обновить можно только себя
-        if (!user.getEmail().equals(currentEmail)) {
-            throw new AccessDeniedException("You can only update your own profile");
-        }
+//        if (!user.getEmail().equals(currentEmail)) {
+//            throw new AccessDeniedException("You can only update your own profile");
+//        }
 
         // Маппим остальные поля (firstName, lastName, email)
         userMapper.update(userData, user);

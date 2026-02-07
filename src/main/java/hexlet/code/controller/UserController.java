@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.security.Principal;
 import java.util.List;
@@ -57,6 +58,11 @@ public final class UserController {
     public UserDTO update(@RequestBody UserDTO userData,
                           @PathVariable Long id,
                           @AuthenticationPrincipal UserDetails currentUser) {
+
+        if (currentUser == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not authenticated");
+        }
+
         return userService.update(userData, id, currentUser.getUsername());
     }
 

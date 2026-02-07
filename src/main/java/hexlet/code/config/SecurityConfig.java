@@ -106,7 +106,8 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
         config.addAllowedOriginPattern("*"); // Или "http://localhost:*"
-        config.addAllowedHeader("*");
+        config.addAllowedHeader("Authorization");
+        config.addAllowedMethod("Content-Type");
         config.addAllowedMethod("*");
         config.addExposedHeader("X-Total-Count"); // ВАЖНО для React Admin
         source.registerCorsConfiguration("/**", config);

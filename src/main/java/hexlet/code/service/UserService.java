@@ -87,21 +87,20 @@ public class UserService {
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        // Проверка прав. Обновить можно только себя
-//        if (!user.getEmail().equals(currentEmail)) {
-//            throw new AccessDeniedException("You can only update your own profile");
-//        }
+        System.out.println("Before update: " + user.getFirstName());
 
-        // Маппим остальные поля (firstName, lastName, email)
         userMapper.update(userData, user);
 
-        // Отдельно обрабатываем пароль
+        System.out.println("After mapper: " + user.getFirstName());
+
         if (userData.getPassword() != null && !userData.getPassword().isEmpty()) {
             user.setPassword(passwordEncoder.encode(userData.getPassword()));
         }
 
-        userRepository.save(user);
-        return userMapper.map(user);
+        var savedUser = userRepository.save(user);
+        userRepository.flush(); // Принудительно отправляем в базу ПРЯМО СЕЙЧАС
+
+        return userMapper.map(savedUser);
     }
 
     /**

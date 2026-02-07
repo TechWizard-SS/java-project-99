@@ -1,8 +1,7 @@
 package hexlet.code.config;
 
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.UnsupportedJwtException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -31,7 +30,7 @@ public final class JwtRequestFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
         AntPathMatcher pathMatcher = new AntPathMatcher();
         String path = request.getServletPath();
-        // Оставляем только то, что НЕ НУЖНО проверять никогда
+
         return pathMatcher.match("/api/login", path)
                 || pathMatcher.match("/", path)
                 || pathMatcher.match("/index.html", path)
@@ -40,32 +39,70 @@ public final class JwtRequestFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain chain)
             throws ServletException, IOException {
 
-        final String authorizationHeader = request.getHeader("Authorization");
-
-        String username = null;
-        String jwt = null;
+        String authorizationHeader = request.getHeader("Authorization");
 
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            jwt = authorizationHeader.substring(7);
+
+            String raw = authorizationHeader.substring(7).trim();
+
+            if ("[object Object]".equals(raw)) {
+                log.warn("JWT is JS object, not string");
+                chain.doFilter(request, response);
+                return;
+            }
+
+            // JSON {"token": "..."}
+            if (raw.startsWith("{")) {
+                try {
+                    JsonNode node = new ObjectMapper().readTree(raw);
+                    if (node.has("token")) {
+                        raw = node.get("token").asText();
+                    }
+                } catch (Exception e) {
+                    log.warn("Cannot parse JWT JSON");
+                    chain.doFilter(request, response);
+                    return;
+                }
+            }
+
+            // JWT обязан иметь 3 части
+            if (!raw.matches("^[^.]+\\.[^.]+\\.[^.]+$")) {
+                log.warn("Invalid JWT format: {}", raw);
+                chain.doFilter(request, response);
+                return;
+            }
+
             try {
-                username = jwtUtil.extractUsername(jwt);
-            } catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException e) {
-                log.warn("JWT error: {}", e.getMessage());
+                String username = jwtUtil.extractUsername(raw);
+
+                if (SecurityContextHolder.getContext().getAuthentication() == null) {
+                    UserDetails userDetails =
+                            userDetailsService.loadUserByUsername(username);
+
+                    if (jwtUtil.validateToken(raw, userDetails)) {
+                        UsernamePasswordAuthenticationToken authToken =
+                                new UsernamePasswordAuthenticationToken(
+                                        userDetails,
+                                        null,
+                                        userDetails.getAuthorities()
+                                );
+                        authToken.setDetails(
+                                new WebAuthenticationDetailsSource().buildDetails(request)
+                        );
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("JWT processing error: {}", e.getMessage());
             }
         }
 
-        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
-            if (jwtUtil.validateToken(jwt, userDetails)) {
-                UsernamePasswordAuthenticationToken authToken =
-                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authToken);
-            }
-        }
         chain.doFilter(request, response);
+
     }
 }

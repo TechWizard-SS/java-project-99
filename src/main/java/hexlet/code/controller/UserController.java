@@ -59,17 +59,21 @@ public final class UserController {
                           @PathVariable Long id,
                           @AuthenticationPrincipal UserDetails currentUser) {
 
-        if (currentUser == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not authenticated");
-        }
-
         return userService.update(userData, id, currentUser.getUsername());
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public void destroy(@PathVariable Long id, Principal principal) {
-        // principal.getName() вернет email текущего залогиненного пользователя
-        userService.delete(id, principal.getName());
+    public void destroy(@PathVariable Long id,
+                        @AuthenticationPrincipal UserDetails currentUser) {
+
+        if (currentUser == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Unauthorized"
+            );
+        }
+
+        userService.delete(id, currentUser.getUsername());
     }
 }

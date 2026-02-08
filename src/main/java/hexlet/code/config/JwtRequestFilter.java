@@ -1,7 +1,5 @@
 package hexlet.code.config;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -44,65 +41,33 @@ public final class JwtRequestFilter extends OncePerRequestFilter {
                                     FilterChain chain)
             throws ServletException, IOException {
 
-        String authorizationHeader = request.getHeader("Authorization");
+        String header = request.getHeader("Authorization");
 
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-
-            String raw = authorizationHeader.substring(7).trim();
-
-            if ("[object Object]".equals(raw)) {
-                log.warn("JWT is JS object, not string");
-                chain.doFilter(request, response);
-                return;
-            }
-
-            // JSON {"token": "..."}
-            if (raw.startsWith("{")) {
-                try {
-                    JsonNode node = new ObjectMapper().readTree(raw);
-                    if (node.has("token")) {
-                        raw = node.get("token").asText();
-                    }
-                } catch (Exception e) {
-                    log.warn("Cannot parse JWT JSON");
-                    chain.doFilter(request, response);
-                    return;
-                }
-            }
-
-            // JWT обязан иметь 3 части
-            if (!raw.matches("^[^.]+\\.[^.]+\\.[^.]+$")) {
-                log.warn("Invalid JWT format: {}", raw);
-                chain.doFilter(request, response);
-                return;
-            }
+        if (header != null && header.startsWith("Bearer ")) {
+            String token = header.substring(7);
 
             try {
-                String username = jwtUtil.extractUsername(raw);
+                String username = jwtUtil.extractUsername(token);
 
                 if (SecurityContextHolder.getContext().getAuthentication() == null) {
                     UserDetails userDetails =
                             userDetailsService.loadUserByUsername(username);
 
-                    if (jwtUtil.validateToken(raw, userDetails)) {
-                        UsernamePasswordAuthenticationToken authToken =
+                    if (jwtUtil.validateToken(token, userDetails)) {
+                        UsernamePasswordAuthenticationToken auth =
                                 new UsernamePasswordAuthenticationToken(
                                         userDetails,
                                         null,
                                         userDetails.getAuthorities()
                                 );
-                        authToken.setDetails(
-                                new WebAuthenticationDetailsSource().buildDetails(request)
-                        );
-                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                        SecurityContextHolder.getContext().setAuthentication(auth);
                     }
                 }
             } catch (Exception e) {
-                log.warn("JWT processing error: {}", e.getMessage());
+                log.warn("Invalid JWT: {}", e.getMessage());
             }
         }
 
         chain.doFilter(request, response);
-
     }
 }

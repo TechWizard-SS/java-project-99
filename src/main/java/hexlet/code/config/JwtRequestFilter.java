@@ -35,7 +35,6 @@ public final class JwtRequestFilter extends OncePerRequestFilter {
                 || pathMatcher.match("/assets/**", path);
     }
 
-    // В JwtRequestFilter.java
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -49,7 +48,7 @@ public final class JwtRequestFilter extends OncePerRequestFilter {
             String token = header.substring(7);
             log.debug("Extracted token: '{}'", token);
 
-            if (token.isEmpty()) { // <-- Добавьте проверку на пустой токен
+            if (token.isEmpty()) {
                 log.warn("Authorization header contains 'Bearer ' but no token follows.");
                 chain.doFilter(request, response);
                 return;

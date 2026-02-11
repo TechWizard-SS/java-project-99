@@ -35,6 +35,7 @@ public final class JwtRequestFilter extends OncePerRequestFilter {
                 || pathMatcher.match("/assets/**", path);
     }
 
+    // В JwtRequestFilter.java
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -42,30 +43,46 @@ public final class JwtRequestFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String header = request.getHeader("Authorization");
+        log.debug("Processing request for URI: {}, Authorization Header: {}", request.getRequestURI(), header);
 
         if (header != null && header.startsWith("Bearer ")) {
             String token = header.substring(7);
+            log.debug("Extracted token: '{}'", token);
+
+            if (token.isEmpty()) { // <-- Добавьте проверку на пустой токен
+                log.warn("Authorization header contains 'Bearer ' but no token follows.");
+                chain.doFilter(request, response);
+                return;
+            }
 
             try {
                 String username = jwtUtil.extractUsername(token);
+                log.debug("Successfully extracted username '{}' from token.", username);
 
                 if (SecurityContextHolder.getContext().getAuthentication() == null) {
-                    UserDetails userDetails =
-                            userDetailsService.loadUserByUsername(username);
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
                     if (jwtUtil.validateToken(token, userDetails)) {
-                        UsernamePasswordAuthenticationToken auth =
-                                new UsernamePasswordAuthenticationToken(
-                                        userDetails,
-                                        null,
-                                        userDetails.getAuthorities()
-                                );
+                        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                                userDetails,
+                                null,
+                                userDetails.getAuthorities()
+                        );
                         SecurityContextHolder.getContext().setAuthentication(auth);
+                        log.debug("Authenticated user '{}' and set security context.", username);
+                    } else {
+                        log.warn("JWT Token is valid format but validation failed (e.g., expired or wrong user).");
                     }
+                } else {
+                    log.debug("Security Context already had an Authentication object, skipping.");
                 }
+            } catch (io.jsonwebtoken.ExpiredJwtException e) {
+                log.warn("Expired JWT: {}", e.getMessage());
             } catch (Exception e) {
-                log.warn("Invalid JWT: {}", e.getMessage());
+                log.warn("Invalid JWT (format error or other): {}. Token was: '{}'", e.getMessage(), token);
             }
+        } else {
+            log.debug("No valid 'Authorization: Bearer ...' header found. Skipping JWT filter logic.");
         }
 
         chain.doFilter(request, response);

@@ -70,26 +70,24 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
-                //.cors(Customizer.withDefaults()) // Включаем наш CORS конфиг (см. ниже)
                 .httpBasic(AbstractHttpConfigurer::disable) // Отключаем Basic Auth, чтобы не лезло окно браузера
                 // САМОЕ ВАЖНОЕ: Отключаем сессии. Только JWT!
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .sessionManagement(session ->
+                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // Статика и логин
-                        .anyRequest().permitAll()
+                                //.anyRequest().permitAll()
 
-//                        .requestMatchers("/", "/index.html", "/assets/**", "/favicon.ico").permitAll()
-//                        .requestMatchers("/api/login").permitAll()
-//
-//                        // Пользователи:
-//                        // Создание и просмотр списка - всем (как у тебя было)
-//                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
-//                        .requestMatchers(HttpMethod.GET, "/api/users").permitAll()
+                        .requestMatchers("/", "/index.html", "/assets/**", "/favicon.ico").permitAll()
+                        .requestMatchers("/api/login").permitAll()
 
-                        // Всё остальное (UPDATE, DELETE, GET ONE) - только с токеном
-//                                                        .anyRequest().authenticated()
+                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/users").permitAll()
+
+                                                        .anyRequest().authenticated()
                 )
-                .exceptionHandling(ex -> ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
+                .exceptionHandling(ex ->
+                        ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

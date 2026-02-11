@@ -59,6 +59,11 @@ public final class UserController {
                           @PathVariable Long id,
                           @AuthenticationPrincipal UserDetails currentUser) {
 
+        if (currentUser == null) {
+             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
+            //String fakeEmail = "admin@example.com"; // для тестирования!
+            //return userService.update(userData, id, fakeEmail);
+        }
         return userService.update(userData, id, currentUser.getUsername());
     }
 
@@ -68,12 +73,11 @@ public final class UserController {
                         @AuthenticationPrincipal UserDetails currentUser) {
 
         if (currentUser == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.UNAUTHORIZED,
-                    "Unauthorized"
-            );
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
+            //String fakeEmail = "admin@example.com"; // Только для тестирования!
+            //userService.delete(id, fakeEmail);
+            //return;
         }
-
         userService.delete(id, currentUser.getUsername());
     }
 }

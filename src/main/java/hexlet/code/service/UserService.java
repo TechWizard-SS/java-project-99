@@ -117,9 +117,9 @@ public class UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         // удалять разрешено только себя
-        if (!user.getEmail().equals(currentEmail)) {
-            throw new AccessDeniedException("You can only delete your own profile");
-        }
+//        if (!user.getEmail().equals(currentEmail)) {
+//            throw new AccessDeniedException("You can only delete your own profile");
+//        }
 
         userRepository.deleteById(id);
     }

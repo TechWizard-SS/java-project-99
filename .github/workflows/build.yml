@@ -36,4 +36,5 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: |
           chmod +x ./gradlew  # CI сделает gradlew исполняемым
-          ./gradlew build sonar --info
+          ./gradlew test jacocoTestReport sonar --info
+#          ./gradlew build sonar --info

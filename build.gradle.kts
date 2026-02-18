@@ -76,13 +76,18 @@ sonar {
 		property("sonar.projectKey", "TechWizard-SS_java-project-99")
 		property("sonar.organization", "techwizard-ss")
 		property("sonar.host.url", "https://sonarcloud.io")
+
+		property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")
+		property("sonar.java.binaries", "build/classes/java/main")
 	}
 }
 
 tasks.jacocoTestReport {
-	dependsOn(tasks.test)
+	dependsOn(tasks.test) // Отчет строится только после прохождения тестов
 	reports {
-		xml.required.set(true)
+		xml.required.set(true)  // Обязательно для Sonar
+		csv.required.set(false)
+		html.required.set(true) // Полезно для тебя, чтобы смотреть покрытие локально
 	}
 }
 

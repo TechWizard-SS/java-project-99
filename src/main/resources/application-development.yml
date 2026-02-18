@@ -1,7 +1,7 @@
 spring:
   datasource:
     url: jdbc:h2:mem:project;DB_CLOSE_DELAY=-1
-    username:
+    username: sa
     password:
     driver-class-name: org.h2.Driver
   h2:
@@ -12,15 +12,25 @@ spring:
     defer-datasource-initialization: true
     hibernate:
       ddl-auto: update
+    # ОТКЛЮЧЕНО, чтобы не мешать дебагу
     show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
 
   security:
     jwt:
-      secret: "yourVeryLongAndRandomSecretKeyHere1234567890ABCDEF1234567890GHIJKLMNOP" # Любой длинный ключ
-      expiration: 3600000 # Время жизни токена в миллисекундах
+      secret: "yourVeryLongAndRandomSecretKeyHere1234567890ABCDEF1234567890GHIJKLMNOP"
+      expiration: 3600000
 
-  logging:
-    level:
-      root: INFO
-      org.springframework.web: INFO
-      org.hibernate: INFO
+logging:
+  level:
+    root: INFO
+    org.springframework.web: INFO
+    # Полностью выключаем логи Hibernate для чистоты
+    org.hibernate.SQL: ERROR
+    org.hibernate.orm.results: ERROR
+    org.hibernate.type.descriptor.sql.BasicBinder: ERROR
+    # Глушим варнинги JWT
+    # hexlet.code.config.JwtRequestFilter: ERROR

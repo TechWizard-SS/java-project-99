@@ -2,125 +2,113 @@ package hexlet.code.service;
 
 import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.mapper.UserMapper;
-import hexlet.code.model.dto.UserDTO;
+import hexlet.code.model.dto.User.UserCreateDTO;
+import hexlet.code.model.dto.User.UserDTO;
+import hexlet.code.model.dto.User.UserUpdateDTO;
+import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.AccessDeniedException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 
 /**
- * Service class for managing users.
+ * Сервис для управления пользователями ({@link User}).
+ * Предоставляет методы для получения списка пользователей, получения,
+ * создания, обновления и удаления отдельных пользователей.
+ * Проверяет уникальность email при создании и наличии связанных задач при удалении.
+ * Использует репозитории {@link UserRepository} и {@link TaskRepository},
+ * а также {@link PasswordEncoder} для хеширования паролей.
  */
 @Service
 @Transactional(readOnly = true)
+@RequiredArgsConstructor
 public class UserService {
 
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private UserMapper userMapper;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
+    private final TaskRepository taskRepository;
 
     /**
-     * Retrieves all users from the repository.
+     * Возвращает список всех пользователей.
      *
-     * @return list of user DTOs
+     * @return список DTO всех пользователей {@link UserDTO}
      */
     public List<UserDTO> getAll() {
-        return userRepository.findAll().stream()
-                .map(userMapper::map)
-                .toList();
+        return userRepository.findAll().stream().map(userMapper::map).toList();
     }
 
     /**
-     * Finds a user by ID.
+     * Находит пользователя по его идентификатору.
      *
-     * @param id the user ID
-     * @return user DTO
-     * @throws ResourceNotFoundException if user is not found
+     * @param id идентификатор пользователя
+     * @return DTO найденного пользователя {@link UserDTO}
+     * @throws ResourceNotFoundException если пользователь с указанным идентификатором не найден
      */
     public UserDTO findById(Long id) {
         var user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + " not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         return userMapper.map(user);
     }
 
     /**
-     * Creates a new user.
+     * Создаёт нового пользователя.
+     * Перед созданием проверяет, что email уникален.
+     * Пароль хешируется перед сохранением.
      *
-     * @param userData the user data to create
-     * @return created user DTO
-     * @throws RuntimeException if email already exists
+     * @param userData DTO с данными для создания пользователя {@link UserCreateDTO}
+     * @return DTO созданного пользователя {@link UserDTO}
+     * @throws ResourceNotFoundException если пользователь с таким email уже существует
      */
     @Transactional
-    public UserDTO create(UserDTO userData) {
+    public UserDTO create(UserCreateDTO userData) {
         if (userRepository.findByEmail(userData.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already exists");
+            throw new ResourceNotFoundException("Email already exists");
         }
-
         var user = userMapper.map(userData);
-        // хешируем пароль ПОСЛЕ маппинга, чтобы маппер не затер его !!
         user.setPassword(passwordEncoder.encode(userData.getPassword()));
         userRepository.save(user);
         return userMapper.map(user);
     }
 
     /**
-     * Updates an existing user.
+     * Обновляет существующего пользователя.
+     * Если в DTO присутствует пароль (JsonNullable), он хешируется и обновляется.
      *
-     * @param userData     the user data to update
-     * @param id           the user ID
-     * @param currentEmail the email of the currently authenticated user
-     * @return updated user DTO
-     * @throws ResourceNotFoundException if user is not found
-     * @throws AccessDeniedException     if user tries to update another user's profile
+     * @param userData DTO с новыми данными пользователя {@link UserUpdateDTO}
+     * @param id       идентификатор обновляемого пользователя
+     * @return DTO обновлённого пользователя {@link UserDTO}
+     * @throws ResourceNotFoundException если пользователь с указанным идентификатором не найден
      */
     @Transactional
-    public UserDTO update(UserDTO userData, Long id, String currentEmail) {
+    public UserDTO update(UserUpdateDTO userData, Long id) {
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
-        System.out.println("Before update: " + user.getFirstName());
 
         userMapper.update(userData, user);
 
-        System.out.println("After mapper: " + user.getFirstName());
-
-        if (userData.getPassword() != null && !userData.getPassword().isEmpty()) {
-            user.setPassword(passwordEncoder.encode(userData.getPassword()));
+        if (userData.getPassword() != null && userData.getPassword().isPresent()) {
+            user.setPassword(passwordEncoder.encode(userData.getPassword().get()));
         }
 
-        var savedUser = userRepository.save(user);
-        userRepository.flush(); // Принудительно отправляем в базу ПРЯМО СЕЙЧАС
-
-        return userMapper.map(savedUser);
+        userRepository.save(user);
+        return userMapper.map(user);
     }
 
     /**
-     * Deletes a user by ID.
+     * Удаляет пользователя по его идентификатору.
+     * Перед удалением проверяет, назначены ли пользователю какие-либо задачи.
      *
-     * @param id           the user ID
-     * @param currentEmail the email of the currently authenticated user
-     * @throws ResourceNotFoundException if user is not found
-     * @throws AccessDeniedException     if user tries to delete another user's profile
+     * @param id идентификатор удаляемого пользователя
+     * @throws ResourceNotFoundException если пользователь назначен исполнителем задач или не найден
      */
     @Transactional
-    public void delete(Long id, String currentEmail) {
-        var user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
-        // удалять разрешено только себя
-//        if (!user.getEmail().equals(currentEmail)) {
-//            throw new AccessDeniedException("You can only delete your own profile");
-//        }
-
+    public void delete(Long id) {
+        if (taskRepository.existsByAssigneeId(id)) {
+            throw new ResourceNotFoundException("Cannot delete user: they are assigned to tasks");
+        }
         userRepository.deleteById(id);
     }
 }

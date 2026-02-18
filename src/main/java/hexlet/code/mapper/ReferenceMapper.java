@@ -8,7 +8,10 @@ import jakarta.persistence.EntityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Mapper for converting between entity IDs and entity objects.
+ * Маппер для преобразования между идентификаторами сущностей (ID) и самими объектами сущностей.
+ * Используется MapStruct для автоматического преобразования полей в DTO,
+ * которые представляют связанные сущности (например, User assigneeId -> User assignee).
+ * Требует доступ к EntityManager для загрузки сущностей по ID.
  */
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public abstract class ReferenceMapper {
@@ -17,12 +20,13 @@ public abstract class ReferenceMapper {
     private EntityManager entityManager;
 
     /**
-     * Converts an entity ID to an entity object.
+     * Преобразует идентификатор сущности в объект сущности, загружая его из базы данных.
+     * Используется как именованный метод маппинга в MapStruct.
      *
-     * @param id          the entity ID
-     * @param entityClass the class of the entity
-     * @param <T>         the type of the entity
-     * @return the entity object or null if ID is null
+     * @param id          идентификатор сущности для загрузки
+     * @param entityClass класс типа сущности
+     * @param <T>         тип сущности
+     * @return объект сущности или null, если ID равен null или сущность не найдена
      */
     @Named("toEntity")
     public <T> T toEntity(Long id, @TargetType Class<T> entityClass) {

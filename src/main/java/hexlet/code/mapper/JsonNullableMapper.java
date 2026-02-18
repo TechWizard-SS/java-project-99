@@ -6,39 +6,42 @@ import org.mapstruct.MappingConstants;
 import org.openapitools.jackson.nullable.JsonNullable;
 
 /**
- * Mapper for converting between JsonNullable and regular objects.
+ * Маппер для преобразования между объектами JsonNullable и обычными объектами.
+ * Используется MapStruct для автоматического преобразования полей сущностей,
+ * которые могут быть представлены как JsonNullable в DTO.
  */
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public abstract class JsonNullableMapper {
 
     /**
-     * Wraps an entity into JsonNullable.
+     * Оборачивает обычный объект в JsonNullable.
      *
-     * @param entity the entity to wrap
-     * @param <T>    the type of the entity
-     * @return JsonNullable containing the entity
+     * @param entity объект, который нужно обернуть
+     * @param <T>    тип объекта
+     * @return объект JsonNullable, содержащий переданный объект
      */
     public <T> JsonNullable<T> wrap(T entity) {
         return JsonNullable.of(entity);
     }
 
     /**
-     * Unwraps a JsonNullable to get the underlying value.
+     * Извлекает значение из JsonNullable.
      *
-     * @param jsonNullable the JsonNullable to unwrap
-     * @param <T>          the type of the value
-     * @return the underlying value or null if JsonNullable is null
+     * @param jsonNullable объект JsonNullable, из которого нужно извлечь значение
+     * @param <T>          тип значения
+     * @return извлечённое значение или null, если JsonNullable равен null или не содержит значения
      */
     public <T> T unwrap(JsonNullable<T> jsonNullable) {
         return jsonNullable == null ? null : jsonNullable.orElse(null);
     }
 
     /**
-     * Checks if a JsonNullable contains a present value.
+     * Проверяет, содержит ли JsonNullable значение.
+     * Используется MapStruct как условие для выполнения преобразований.
      *
-     * @param nullable the JsonNullable to check
-     * @param <T>      the type of the value
-     * @return true if the JsonNullable is not null and contains a present value
+     * @param nullable объект JsonNullable для проверки
+     * @param <T>      тип значения
+     * @return true, если JsonNullable не равен null и содержит значение, иначе false
      */
     @Condition
     public <T> boolean isPresent(JsonNullable<T> nullable) {

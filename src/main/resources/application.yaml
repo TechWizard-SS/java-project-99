@@ -2,12 +2,15 @@ spring:
   profiles:
     active: development # По умолчанию запускаем дев-версию
   jpa:
-    show-sql: true
+    show-sql: false
     hibernate:
       ddl-auto: update
     properties:
       hibernate:
         format_sql: true
-
-server:
-  port: 8080
+logging:
+  level:
+    root: INFO
+    org.hibernate: ERROR
+    # Это отключит логи самого движка Hibernate
+    org.hibernate.engine.query.spi.QueryPlanCache: ERROR

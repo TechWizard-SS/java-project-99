@@ -9,13 +9,23 @@ import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.Collections;
 
+/**
+ * Абстрактный базовый класс для интеграционных тестов.
+ * Предоставляет общую инфраструктуру для тестирования контроллеров:
+ * - MockMvc для выполнения HTTP-запросов
+ * - ObjectMapper для сериализации/десериализации JSON
+ * - Репозитории для подготовки и проверки данных
+ * - Утилиты для работы с JWT-токенами
+ * - Преднастроенный токен аутентификации для тестов, требующих авторизации
+ * Аннотация @Transactional гарантирует, что каждая транзакция в тесте будет откачена,
+ * оставляя базу данных в чистом состоянии.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
-@ActiveProfiles("test")
 @Transactional
 public abstract class BaseTest {
 
@@ -36,21 +46,38 @@ public abstract class BaseTest {
 
     protected String token;
 
-    // Хелпер для получения токена (имитируем вход в систему)
-    protected String getAuthToken(String email) {
-        var userDetails = userDetailsService.loadUserByUsername(email);
+
+    /**
+     * Создаёт JWT-токен для указанного пользователя.
+     * Используется для имитации входа в систему в тестах.
+     *
+     * @param user объект пользователя {@link User}, для которого генерируется токен
+     * @return строка токена в формате "Bearer {token}"
+     */
+    protected String getAuthToken(User user) {
+        // Создаем UserDetails на основе сохраненного объекта, не дергая БД лишний раз
+        var userDetails = org.springframework.security.core.userdetails.User.withUsername(user.getEmail())
+                .password(user.getPassword())
+                .authorities(Collections.emptyList())
+                .build();
         return "Bearer " + jwtUtil.generateToken(userDetails);
     }
 
+    /**
+     * Подготовка данных перед каждым тестовым методом.
+     * Проверяет наличие тестового пользователя в базе данных.
+     * Если пользователя нет, создаёт его.
+     * Затем генерирует и сохраняет токен аутентификации для этого пользователя.
+     */
     @BeforeEach
     public void setup() {
-        // Убеждаемся, что в базе есть хотя бы один пользователь для тестов
-        if (userRepository.findByEmail("hexlet@example.com").isEmpty()) {
-            var user = new User();
-            user.setEmail("hexlet@example.com");
-            user.setPassword("password"); // В тестах не шифруем, так как не проверяем логин
-            userRepository.save(user);
-        }
-        token = getAuthToken("hexlet@example.com");
+        var user = userRepository.findByEmail("hexlet1@example.com")
+                .orElseGet(() -> {
+                    var newUser = new User();
+                    newUser.setEmail("hexlet1@example.com");
+                    newUser.setPassword("password");
+                    return userRepository.save(newUser);
+                });
+        token = getAuthToken(user); // Передаем объект, а не email
     }
 }

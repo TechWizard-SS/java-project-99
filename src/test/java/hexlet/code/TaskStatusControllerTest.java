@@ -6,17 +6,29 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import hexlet.code.util.NamedRoutes;
 import java.util.Map;
 
-@SpringBootTest
+/**
+ * Интеграционные тесты для контроллера {@link hexlet.code.controller.TaskStatusController}.
+ * Проверяют корректную обработку ошибок, например, при попытке создания статуса задачи
+ * с уже существующим слагом.
+ * Использует {@link BaseTest} для подготовки инфраструктуры и токена аутентификации.
+ */
 public class TaskStatusControllerTest extends BaseTest {
 
     @Autowired
     private TaskStatusRepository taskStatusRepository;
 
+    /**
+     * Тестирует создание статуса задачи с дублирующимся слагом.
+     * Сначала создаёт в базе данных один статус с определённым слагом.
+     * Затем отправляет POST-запрос для создания другого статуса с тем же слагом.
+     * Проверяет, что запрос возвращает статус 404 Not Found,
+     * что соответствует выбрасываемому в сервисе исключению {@link hexlet.code.exception.ResourceNotFoundException}
+     * при попытке создать статус с уже существующим слагом.
+     */
     @Test
     public void testCreateStatusWithDuplicateSlug() throws Exception {
         var status = new TaskStatus();
@@ -30,6 +42,6 @@ public class TaskStatusControllerTest extends BaseTest {
                         .header("Authorization", token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(data)))
-                .andExpect(status().isNotFound()); // Твой сервис кинет ResourceNotFoundException ("Slug already exists")
+                .andExpect(status().isNotFound());
     }
 }

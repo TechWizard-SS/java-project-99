@@ -2,7 +2,6 @@ plugins {
 	java
 	id("org.springframework.boot") version "3.5.10"
 	id("io.spring.dependency-management") version "1.1.7"
-	id("gg.jte.gradle") version "3.1.16"
 	id("jacoco")
 	checkstyle
 	id("org.sonarqube") version "6.2.0.5505"
@@ -85,11 +84,6 @@ tasks.jacocoTestReport {
 	reports {
 		xml.required.set(true)
 	}
-}
-
-jte {
-	generate()
-	binaryStaticContent = true
 }
 
 tasks.withType<Test> {

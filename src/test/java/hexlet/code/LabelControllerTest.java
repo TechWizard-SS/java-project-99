@@ -36,7 +36,6 @@ public class LabelControllerTest extends BaseTest {
      */
     @BeforeEach
     public void init() {
-        // Используем orElseGet, чтобы избежать ошибок уникальности, если 'bug' уже есть
         testLabel = labelRepository.findByName("bug1")
                 .orElseGet(() -> {
                     var label = new Label();

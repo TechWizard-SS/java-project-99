@@ -5,6 +5,7 @@ plugins {
 	id("jacoco")
 	checkstyle
 	id("org.sonarqube") version "6.2.0.5505"
+	id("io.sentry.jvm.gradle") version "6.0.0"
 }
 
 group = "hexlet.code"
@@ -15,6 +16,17 @@ java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(21)
 	}
+}
+
+sentry {
+	// Включает загрузку исходного кода в Sentry для отображения контекста ошибки
+	includeSourceContext.set(true)
+
+	org.set("hexletio-0o")
+	projectName.set("java-spring-boot")
+
+	// Берем токен из переменной окружения
+	authToken.set(System.getenv("SENTRY_AUTH_TOKEN"))
 }
 
 configurations {
@@ -79,6 +91,9 @@ sonar {
 
 		property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")
 		property("sonar.java.binaries", "build/classes/java/main")
+
+		property("sonar.sources", "src/main/java")
+		property("sonar.tests", "src/test/java")
 	}
 }
 

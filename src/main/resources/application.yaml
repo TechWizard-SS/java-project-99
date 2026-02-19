@@ -14,3 +14,10 @@ logging:
     org.hibernate: ERROR
     # Это отключит логи самого движка Hibernate
     org.hibernate.engine.query.spi.QueryPlanCache: ERROR
+
+sentry:
+  dsn: https://3280b4bdf1a4aacf6efaa06909741991@o4510912499613696.ingest.de.sentry.io/4510912512655440
+  # Отправка данных о пользователе (IP, заголовки)
+  send-default-pii: true
+  # Процент записываемых транзакций для мониторинга производительности (1.0 = 100%)
+  traces-sample-rate: 1.0

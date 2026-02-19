@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
-
+import java.lang.Exception;import io.sentry.Sentry;
 /**
  * Контроллер для управления пользователями ({@link hexlet.code.model.User}).
  * Обрабатывает HTTP-запросы для получения списка пользователей, просмотра,
@@ -117,6 +117,13 @@ public final class UserController {
         if (currentUser == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
         }
+
+        try {
+            throw new Exception("Sentry Test: Удаление пользователя ID " + id);
+        } catch (Exception e) {
+            Sentry.captureException(e);
+        }
+
         userService.delete(id);
     }
 }

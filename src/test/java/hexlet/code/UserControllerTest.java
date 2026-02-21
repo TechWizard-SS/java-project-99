@@ -1,7 +1,16 @@
 package hexlet.code;
 
+import hexlet.code.model.Task;
+import hexlet.code.model.TaskStatus;
+import hexlet.code.model.User;
+import hexlet.code.repository.TaskRepository;
+import hexlet.code.repository.TaskStatusRepository;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -20,6 +29,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
  */
 public class UserControllerTest extends BaseTest {
 
+    PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+    @Autowired
+    TaskRepository taskRepository;
+
+    @Autowired
+    TaskStatusRepository taskStatusRepository;
     /**
      * Тестирует получение списка всех пользователей.
      * Отправляет GET-запрос к '/api/users' с токеном аутентификации.
@@ -91,4 +107,54 @@ public class UserControllerTest extends BaseTest {
         mockMvc.perform(delete("/api/users/" + user.getId()))
                 .andExpect(status().isUnauthorized());
     }
+
+
+    //---------------------------------
+
+    @Test
+    void createUserWithDuplicateEmailShouldReturnNotFound() throws Exception {
+        User user = new User();
+        user.setFirstName("Hex");
+        user.setLastName("Let");
+        user.setEmail("test@mail.com");
+        user.setPassword(passwordEncoder.encode("123456"));
+        userRepository.save(user);
+
+        String json = "{"
+                + "\"firstName\":\"Hex\","
+                + "\"lastName\":\"Let\","
+                + "\"email\":\"test@mail.com\","
+                + "\"password\":\"123456\""
+                + "}";
+
+        mockMvc.perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+                .header("Authorization", token))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void deleteUserWithTasksShouldReturnNotFound() throws Exception {
+        User user = new User();
+        user.setEmail("user@mail.com");
+        user.setPassword(passwordEncoder.encode("123"));
+        user = userRepository.save(user);
+
+        TaskStatus status = new TaskStatus();
+        status.setName("New");
+        status.setSlug("new");
+        status = taskStatusRepository.save(status);
+
+        Task task = new Task();
+        task.setName("Task1");
+        task.setTaskStatus(status);
+        task.setAssignee(user);
+        taskRepository.save(task);
+
+        mockMvc.perform(delete("/api/users/" + user.getId())
+                .header("Authorization", token))
+                .andExpect(status().isNotFound());
+    }
+
 }

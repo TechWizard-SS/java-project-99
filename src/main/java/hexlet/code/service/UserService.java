@@ -1,5 +1,6 @@
 package hexlet.code.service;
 
+import hexlet.code.exception.DuplicateResourceException;
 import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.mapper.UserMapper;
 import hexlet.code.model.dto.User.UserCreateDTO;
@@ -65,8 +66,9 @@ public class UserService {
     @Transactional
     public UserDTO create(UserCreateDTO userData) {
         if (userRepository.findByEmail(userData.getEmail()).isPresent()) {
-            throw new ResourceNotFoundException("Email already exists");
+            throw new DuplicateResourceException("Email already exists");
         }
+
         var user = userMapper.map(userData);
         user.setPassword(passwordEncoder.encode(userData.getPassword()));
         userRepository.save(user);

@@ -37,7 +37,7 @@ public final class DataLoader {
 
             User admin2 = new User();
             admin2.setEmail("hehe@example.com");
-            admin2.setPassword(passwordEncoder.encode("admin"));
+            admin2.setPassword(passwordEncoder.encode("password123"));
             admin2.setFirstName("Admin2");
             admin2.setLastName("User2");
             userRepository.save(admin2);

@@ -1,7 +1,11 @@
 package hexlet.code;
 
 import hexlet.code.model.Label;
+import hexlet.code.model.Task;
+import hexlet.code.model.TaskStatus;
 import hexlet.code.repository.LabelRepository;
+import hexlet.code.repository.TaskRepository;
+import hexlet.code.repository.TaskStatusRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +31,15 @@ public class LabelControllerTest extends BaseTest {
     @Autowired
     private LabelRepository labelRepository;
 
+    @Autowired
+    private TaskRepository taskRepository;
+
     private Label testLabel;
+
+    @Autowired
+    private TaskStatusRepository taskStatusRepository;
+
+
 
     /**
      * Подготовка данных перед каждым тестовым методом.
@@ -125,5 +137,27 @@ public class LabelControllerTest extends BaseTest {
                 .andExpect(status().isNoContent());
 
         assertThat(labelRepository.existsById(testLabel.getId())).isFalse();
+    }
+
+    @Test
+    void deleteLabelUsedInTaskShouldReturnNotFound() throws Exception {
+        Label label = new Label();
+        label.setName("bug2");
+        label = labelRepository.save(label);
+
+        TaskStatus status = new TaskStatus();
+        status.setName("New2");
+        status.setSlug("new2");
+        status = taskStatusRepository.save(status);
+
+        Task task = new Task();
+        task.setName("Task1");
+        task.setTaskStatus(status);
+        task.getLabels().add(label);
+        taskRepository.save(task);
+
+        mockMvc.perform(delete("/api/labels/" + label.getId())
+                .header("Authorization", token))
+                .andExpect(status().isNotFound());
     }
 }

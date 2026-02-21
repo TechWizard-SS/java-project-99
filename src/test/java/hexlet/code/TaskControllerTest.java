@@ -13,9 +13,10 @@ import org.springframework.http.MediaType;
 import java.util.Map;
 import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -180,5 +181,35 @@ public class TaskControllerTest extends BaseTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(Map.of("title", "fail"))))
                 .andExpect(status().isUnauthorized()); // 401
+    }
+
+
+    //---------------------
+
+    @Test
+    void getTaskNotFound() throws Exception {
+        mockMvc.perform(get("/api/tasks/999999")
+                .header("Authorization", token))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void updateTaskNotFound() throws Exception {
+        String json = "{\n"
+                + "  \"name\": \"Updated\"\n"
+                + "}";
+
+        mockMvc.perform(put("/api/tasks/999999")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+                .header("Authorization", token))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deleteTaskNotFound() throws Exception {
+        mockMvc.perform(delete("/api/tasks/999999")
+                .header("Authorization", token))
+                .andExpect(status().isNotFound());
     }
 }

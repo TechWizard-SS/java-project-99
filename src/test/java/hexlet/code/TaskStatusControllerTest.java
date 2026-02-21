@@ -1,13 +1,21 @@
 package hexlet.code;
 
+import hexlet.code.model.Task;
 import hexlet.code.model.TaskStatus;
+import hexlet.code.model.User;
+import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.TaskStatusRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.http.MediaType;
 import hexlet.code.util.NamedRoutes;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import java.util.Map;
 
 /**
@@ -20,6 +28,12 @@ public class TaskStatusControllerTest extends BaseTest {
 
     @Autowired
     private TaskStatusRepository taskStatusRepository;
+
+    @Autowired
+    private TaskRepository taskRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     /**
      * Тестирует создание статуса задачи с дублирующимся слагом.
@@ -43,5 +57,69 @@ public class TaskStatusControllerTest extends BaseTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(data)))
                 .andExpect(status().isNotFound());
+    }
+
+    //--------------------------------------------------------
+
+    @Test
+    void updateTaskStatusWithDuplicateSlugShouldReturnNotFound() throws Exception {
+        TaskStatus status1 = new TaskStatus();
+        status1.setName("Status1");
+        status1.setSlug("slug1");
+        status1 = taskStatusRepository.save(status1);
+
+        TaskStatus status2 = new TaskStatus();
+        status2.setName("Status2");
+        status2.setSlug("slug2");
+        taskStatusRepository.save(status2);
+
+        String json = "{\n"
+                + "  \"slug\": \"slug2\"\n"
+                + "}";
+
+        mockMvc.perform(put("/api/task_statuses/" + status1.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+                .header("Authorization", token))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deleteTaskStatusUsedInTaskShouldReturnNotFound() throws Exception {
+        TaskStatus status = new TaskStatus();
+        status.setName("New");
+        status.setSlug("new");
+        status = taskStatusRepository.save(status);
+
+        Task task = new Task();
+        task.setName("Task1");
+        task.setTaskStatus(status);
+        taskRepository.save(task);
+
+        mockMvc.perform(delete("/api/task_statuses/" + status.getId())
+                .header("Authorization", token))
+                .andExpect(status().isNotFound());
+    }
+
+
+    @Test
+    void updateUserPasswordShouldChangePassword() throws Exception {
+        User user = new User();
+        user.setEmail("user@mail.com");
+        user.setPassword(passwordEncoder.encode("oldpass"));
+        user = userRepository.save(user);
+
+        String json = "{\n"
+                + "  \"password\": \"newpass\"\n"
+                + "}";
+
+        mockMvc.perform(put("/api/users/" + user.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json)
+                        .header("Authorization", token))
+                .andExpect(status().isOk());
+
+        User updated = userRepository.findById(user.getId()).orElseThrow();
+        assertThat(passwordEncoder.matches("newpass", updated.getPassword())).isTrue();
     }
 }

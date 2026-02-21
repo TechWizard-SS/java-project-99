@@ -62,18 +62,18 @@ public final class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("error", "Access denied: " + ex.getMessage()));
     }
 
-    /**
-     * Обрабатывает исключение {@link RuntimeException}.
-     * Используется для перехвата других стандартных {@link RuntimeException},
-     * например, выбрасываемых в сервисах при нарушении уникальности (email, slug).
-     * Возвращает ответ с кодом состояния HTTP 400 (BAD REQUEST)
-     * и телом JSON, содержащим сообщение об ошибке.
-     *
-     * @param ex исключение {@link RuntimeException}, возникшее в приложении
-     * @return {@link ResponseEntity} с HTTP статусом 400 и сообщением об ошибке
-     */
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<Map<String, String>> handleRuntimeException(RuntimeException ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("error", ex.getMessage()));
+
+
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, String>> handleOtherExceptions(Exception ex) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Internal server error"));
+    }
+
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<Map<String, String>> handleDuplicateResource(DuplicateResourceException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("error", ex.getMessage()));
     }
 }

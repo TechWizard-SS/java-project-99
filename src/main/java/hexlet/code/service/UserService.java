@@ -9,6 +9,8 @@ import hexlet.code.model.dto.User.UserUpdateDTO;
 import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -86,8 +88,19 @@ public class UserService {
      */
     @Transactional
     public UserDTO update(UserUpdateDTO userData, Long id) {
+        // 1. Получаем email текущего авторизованного пользователя
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        var currentEmail = authentication.getName();
+
+        // 2. Находим пользователя, которого хотим обновить
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        // 3. ПРОВЕРКА: Если текущий пользователь — не тот, кого обновляют, кидаем 403
+        // (В Spring Security для этого обычно используется AccessDeniedException)
+        if (!user.getEmail().equals(currentEmail)) {
+            throw new AccessDeniedException("You can only update your own profile");
+        }
 
         userMapper.update(userData, user);
 
@@ -95,10 +108,15 @@ public class UserService {
             user.setPassword(passwordEncoder.encode(userData.getPassword().get()));
         }
 
+        // Email обычно обновлять нельзя или нужно с осторожностью,
+        // так как это login в Spring Security. Но если логика требует:
+        if (userData.getEmail() != null && userData.getEmail().isPresent()) {
+            user.setEmail(userData.getEmail().get());
+        }
+
         userRepository.save(user);
         return userMapper.map(user);
     }
-
     /**
      * Удаляет пользователя по его идентификатору.
      * Перед удалением проверяет, назначены ли пользователю какие-либо задачи.

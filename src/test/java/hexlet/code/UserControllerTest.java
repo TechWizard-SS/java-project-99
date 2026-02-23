@@ -171,4 +171,20 @@ public class UserControllerTest extends BaseTest {
                         .content(om.writeValueAsString(data)))
                 .andExpect(status().isBadRequest());
     }
+
+    @Test
+    public void testUpdateAnotherUserShouldReturnForbidden() throws Exception {
+        var anotherUser = new User();
+        anotherUser.setEmail("stranger@mail.com");
+        anotherUser.setPassword(passwordEncoder.encode("password"));
+        userRepository.save(anotherUser);
+
+        var data = Map.of("firstName", "Hack");
+
+        mockMvc.perform(put("/api/users/" + anotherUser.getId())
+                        .header("Authorization", token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(data)))
+                .andExpect(status().isForbidden());
+    }
 }

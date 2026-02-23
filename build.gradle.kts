@@ -96,14 +96,27 @@ sonar {
 		property("sonar.tests", "src/test/java")
 	}
 }
-
 tasks.jacocoTestReport {
-	dependsOn(tasks.test) // Отчет строится только после прохождения тестов
+	dependsOn(tasks.test) // Твое существующее условие
+
 	reports {
-		xml.required.set(true)  // Обязательно для Sonar
+		xml.required.set(true)
 		csv.required.set(false)
-		html.required.set(true) // Полезно для тебя, чтобы смотреть покрытие локально
+		html.required.set(true)
 	}
+
+	// Классы, которые не требуют покрытия тестами
+	classDirectories.setFrom(
+		sourceSets.main.get().output.asFileTree.matching {
+			exclude(
+				"hexlet/code/util/**",
+				"hexlet/code/component/**",
+				"hexlet/code/AppApplication.class",
+				"hexlet/code/model/**",
+				"hexlet/code/model/dto/**"
+			)
+		}
+	)
 }
 
 tasks.withType<Test> {

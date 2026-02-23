@@ -1,6 +1,7 @@
 package hexlet.code;
 
 import hexlet.code.model.Task;
+import hexlet.code.model.User;
 import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.LabelRepository;
@@ -10,6 +11,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 import java.util.Map;
 import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -40,6 +43,9 @@ public class TaskControllerTest extends BaseTest {
 
     private TaskStatus testStatus;
     private Label testLabel;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
 
     /**
@@ -211,5 +217,68 @@ public class TaskControllerTest extends BaseTest {
         mockMvc.perform(delete("/api/tasks/999999")
                 .header("Authorization", token))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void testFilterByAssignee() throws Exception {
+        // Создаем еще одного пользователя, чтобы убедиться, что фильтр работает
+        var anotherUser = new User();
+        anotherUser.setEmail("another@mail.com");
+        anotherUser.setPassword(passwordEncoder.encode("password"));
+        userRepository.save(anotherUser);
+
+        var task = new Task();
+        task.setName("Task for Another");
+        task.setTaskStatus(testStatus);
+        task.setAssignee(anotherUser);
+        taskRepository.save(task);
+
+        mockMvc.perform(get("/api/tasks?assigneeId=" + anotherUser.getId())
+                        .header("Authorization", token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].title").value("Task for Another"))
+                .andExpect(jsonPath("$.length()").value(1)); // Проверяем, что в списке только одна задача
+    }
+
+    @Test
+    void testFilterByLabel() throws Exception {
+        var task = new Task();
+        task.setName("Labeled Task");
+        task.setTaskStatus(testStatus);
+        task.getLabels().add(testLabel); // testLabel из твоего @BeforeEach
+        taskRepository.save(task);
+
+        mockMvc.perform(get("/api/tasks?labelId=" + testLabel.getId())
+                        .header("Authorization", token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].title").value("Labeled Task"))
+                .andExpect(jsonPath("$[0].taskLabelIds[0]").value(testLabel.getId()));
+    }
+
+    @Test
+    void testFilterByAllParams() throws Exception {
+        var user = userRepository.findByEmail("hexlet1@example.com").get();
+
+        var task = new Task();
+        task.setName("Complex Search");
+        task.setTaskStatus(testStatus);
+        task.setAssignee(user);
+        task.getLabels().add(testLabel);
+        taskRepository.save(task);
+
+        String url = String.format("/api/tasks?titleCont=Complex&status=%s&assigneeId=%d&labelId=%d",
+                testStatus.getSlug(), user.getId(), testLabel.getId());
+
+        mockMvc.perform(get(url).header("Authorization", token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].title").value("Complex Search"));
+    }
+
+    @Test
+    void testFilterEmptyResult() throws Exception {
+        mockMvc.perform(get("/api/tasks?titleCont=UnknownTaskName")
+                        .header("Authorization", token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
     }
 }

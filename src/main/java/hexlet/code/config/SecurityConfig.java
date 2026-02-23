@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -17,11 +18,12 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
+import org.springframework.web.cors.CorsConfigurationSource;
+import java.util.List;
 
 /**
  * Конфигурационный класс для настройки параметров безопасности Spring Security.
- * Включает настройки аутентификации, авторизации, фильтров и обработчиков исключений.
+ * Использует современный подход с {@link SecurityFilterChain} и {@link HttpSecurity} API.
  */
 @Configuration
 @EnableWebSecurity
@@ -36,8 +38,7 @@ public class SecurityConfig {
      * Создаёт бин для кодировщика паролей, используя алгоритм BCrypt.
      *
      * @return экземпляр {@link BCryptPasswordEncoder}
-     */
-    @Bean
+     */    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
@@ -56,7 +57,8 @@ public class SecurityConfig {
 
     /**
      * Создаёт бин для цепочки фильтров безопасности с настроенными правилами.
-     * Отключает CSRF и сессии, настраивает доступ к маршрутам и добавляет JWT-фильтр.
+     * Отключает CSRF, включает CORS, отключает сессии, настраивает доступ к маршрутам
+     * и добавляет JWT-фильтр.
      *
      * @param http билдер {@link HttpSecurity} для настройки параметров HTTP-безопасности
      * @return настроенная цепочка фильтров безопасности {@link SecurityFilterChain}
@@ -66,23 +68,19 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
+                .cors(Customizer.withDefaults())
                 .httpBasic(AbstractHttpConfigurer::disable)
+                .formLogin(AbstractHttpConfigurer::disable)
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-
                         .requestMatchers("/", "/index.html", "/assets/**", "/favicon.ico").permitAll()
                         .requestMatchers("/api/login").permitAll()
-
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/users").permitAll()
-
-                        .requestMatchers(HttpMethod.GET, "/api/task_statuses").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/task_statuses/**").permitAll()
-
+                        .requestMatchers(HttpMethod.GET, "/api/task_statuses", "/api/task_statuses/**").permitAll()
                         .requestMatchers("/api/tasks/**").authenticated()
-
-                                                        .anyRequest().authenticated()
+                        .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex ->
                         ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
@@ -91,26 +89,24 @@ public class SecurityConfig {
                 .build();
     }
 
-
-    // Этот бин нужен, чтобы фронтенд видел заголовок X-Total-Count и мог слать токены
     /**
-     * Создаёт бин для фильтра CORS (Cross-Origin Resource Sharing).
+     * Создаёт бин для источника конфигурации CORS (Cross-Origin Resource Sharing).
      * Позволяет настроить политику CORS для приложения.
      *
-     * @return экземпляр {@link CorsFilter}
+     * @return экземпляр {@link CorsConfigurationSource}
      */
     @Bean
-    public CorsFilter corsFilter() {
+    public CorsConfigurationSource corsConfigurationSource() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.addAllowedOriginPattern("*"); // Позволяет запросы с любого источника (осторожно!)
-        config.addAllowedHeader("Authorization"); // Позволяет заголовок Authorization
-        config.addAllowedMethod("Content-Type"); // Позволяет метод Content-Type
-        config.addAllowedMethod("*"); // Позволяет все методы
-        config.addExposedHeader("X-Total-Count"); // Позволяет клиенту видеть заголовок X-Total-Count
+        config.addAllowedOriginPattern("*");
+        config.addAllowedHeader("*");
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+
+        config.addExposedHeader("X-Total-Count");
         source.registerCorsConfiguration("/**", config);
-        return new CorsFilter(source);
+        return source;
     }
 
     /**
@@ -121,8 +117,8 @@ public class SecurityConfig {
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(myUserDetailsService); // Устанавливаем сервис для загрузки пользователей
-        authProvider.setPasswordEncoder(passwordEncoder()); // Устанавливаем кодировщик паролей
+        authProvider.setUserDetailsService(myUserDetailsService);
+        authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }
 }

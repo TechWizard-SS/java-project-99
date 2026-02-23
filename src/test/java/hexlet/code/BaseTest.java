@@ -24,7 +24,7 @@ import java.util.Collections;
  * Аннотация @Transactional гарантирует, что каждая транзакция в тесте будет откачена,
  * оставляя базу данных в чистом состоянии.
  */
-@SpringBootTest
+@SpringBootTest(properties = "ADMIN_PASSWORD=password123")
 @AutoConfigureMockMvc
 @Transactional
 public abstract class BaseTest {

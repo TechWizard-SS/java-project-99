@@ -29,7 +29,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
  */
 public class UserControllerTest extends BaseTest {
 
-    PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    @Autowired
+    PasswordEncoder passwordEncoder;
 
     @Autowired
     TaskRepository taskRepository;
@@ -157,4 +158,17 @@ public class UserControllerTest extends BaseTest {
                 .andExpect(status().isNotFound());
     }
 
+
+    @Test
+    public void testCreateUserWithInvalidData() throws Exception {
+        var data = Map.of(
+                "email", "not-an-email",
+                "password", "1"
+        );
+
+        mockMvc.perform(post("/api/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(om.writeValueAsString(data)))
+                .andExpect(status().isBadRequest());
+    }
 }

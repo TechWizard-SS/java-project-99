@@ -23,6 +23,8 @@ spring:
     jwt:
       secret: "yourVeryLongAndRandomSecretKeyHere1234567890ABCDEF1234567890GHIJKLMNOP"
       expiration: 3600000
+admin:
+  password: ${ADMIN_PASSWORD:password123}
 
 logging:
   level:

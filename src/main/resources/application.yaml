@@ -15,7 +15,7 @@ spring:
 
 sentry:
   dsn: https://3280b4bdf1a4aacf6efaa06909741991@o4510912499613696.ingest.de.sentry.io/4510912512655440
-  send-default-pii: true
+  send-default-pii: false
   traces-sample-rate: 1.0
 
 

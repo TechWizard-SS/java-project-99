@@ -113,7 +113,9 @@ public abstract class TaskMapper {
      */
     @Named("idToUser")
     protected User idToUser(JsonNullable<Long> userId) {
-        return userId != null && userId.isPresent()
+//        return userId != null && userId.isPresent()
+//                ? userRepository.findById(userId.get()).orElse(null) : null;
+        return userId != null && userId.isPresent() && userId.get() != null
                 ? userRepository.findById(userId.get()).orElse(null) : null;
     }
 
@@ -125,9 +127,15 @@ public abstract class TaskMapper {
      * @param slug JsonNullable, содержащий slug статуса
      * @return объект {@link TaskStatus} или null
      */
+//    @Named("slugToStatus")
+//    protected TaskStatus slugToStatus(JsonNullable<String> slug) {
+//        return slug != null && slug.isPresent()
+//                ? statusRepository.findBySlug(slug.get()).orElse(null) : null;
+//    }
     @Named("slugToStatus")
     protected TaskStatus slugToStatus(JsonNullable<String> slug) {
-        return slug != null && slug.isPresent()
+        // Добавляем проверку slug.get() != null
+        return slug != null && slug.isPresent() && slug.get() != null
                 ? statusRepository.findBySlug(slug.get()).orElse(null) : null;
     }
 
@@ -139,13 +147,21 @@ public abstract class TaskMapper {
      * @param labelIds JsonNullable, содержащий множество ID меток
      * @return множество объектов {@link Label} или null
      */
+//    @Named("idsToLabels")
+//    protected Set<Label> idsToLabels(JsonNullable<Set<Long>> labelIds) {
+//        if (labelIds == null || !labelIds.isPresent()) {
+//            return null;
+//        } else {
+//            return new HashSet<>(labelRepository.findAllById(labelIds.get()));
+//        }
+//    }
+
     @Named("idsToLabels")
     protected Set<Label> idsToLabels(JsonNullable<Set<Long>> labelIds) {
-        if (labelIds == null || !labelIds.isPresent()) {
+        if (labelIds == null || !labelIds.isPresent() || labelIds.get() == null) {
             return null;
-        } else {
-            return new HashSet<>(labelRepository.findAllById(labelIds.get()));
         }
+        return new HashSet<>(labelRepository.findAllById(labelIds.get()));
     }
 
     // --- ХЕЛПЕРЫ ДЛЯ ОБЫЧНЫХ ПОЛЕЙ (Create) ---

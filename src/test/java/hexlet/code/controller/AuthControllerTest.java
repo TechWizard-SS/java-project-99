@@ -1,5 +1,6 @@
-package hexlet.code;
+package hexlet.code.controller;
 
+import hexlet.code.BaseTest;
 import hexlet.code.model.User;
 import hexlet.code.util.NamedRoutes;
 import org.junit.jupiter.api.BeforeEach;

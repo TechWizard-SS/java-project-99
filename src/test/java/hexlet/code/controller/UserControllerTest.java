@@ -1,5 +1,6 @@
-package hexlet.code;
+package hexlet.code.controller;
 
+import hexlet.code.BaseTest;
 import hexlet.code.model.Task;
 import hexlet.code.model.TaskStatus;
 import hexlet.code.model.User;
@@ -8,7 +9,6 @@ import hexlet.code.repository.TaskStatusRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Map;

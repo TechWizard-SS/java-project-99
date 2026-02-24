@@ -106,17 +106,13 @@ tasks.jacocoTestReport {
 	}
 
 	// Классы, которые не требуют покрытия тестами
-//	classDirectories.setFrom(
-//		sourceSets.main.get().output.asFileTree.matching {
-//			exclude(
-//				"hexlet/code/util/**",
-//				"hexlet/code/component/**",
-//				"hexlet/code/AppApplication.class",
-//				"hexlet/code/model/**",
-//				"hexlet/code/model/dto/**"
-//			)
-//		}
-//	)
+	classDirectories.setFrom(
+		sourceSets.main.get().output.asFileTree.matching {
+			exclude(
+				"hexlet/code/util/**",
+			)
+		}
+	)
 }
 
 tasks.withType<Test> {

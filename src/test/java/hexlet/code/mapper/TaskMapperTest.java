@@ -62,7 +62,6 @@ public class TaskMapperTest extends BaseTest {
 
     @BeforeEach
     public void setUp() {
-        // Базовый юзер создается в BaseTest, возьмем его
         testUser = userRepository.findByEmail("hexlet1@example.com").orElseThrow();
 
         testStatus = new TaskStatus();
@@ -179,7 +178,6 @@ public class TaskMapperTest extends BaseTest {
         assertThat(task.getName()).isEqualTo("Updated Task");
 
         // 4. Покрываем хелперы (красные ветки с null)
-        // Вызываем напрямую, чтобы добить покрытие protected методов
         assertThat(taskMapper.idToUser(JsonNullable.undefined())).isNull();
         assertThat(taskMapper.slugToStatus(JsonNullable.undefined())).isNull();
         assertThat(taskMapper.idsToLabels(JsonNullable.undefined())).isNull();

@@ -1,23 +1,26 @@
 spring:
   profiles:
-    active: development # По умолчанию запускаем дев-версию
+    active: development # Профиль по умолчанию
   jpa:
-    show-sql: false
     hibernate:
-      ddl-auto: update
+      ddl-auto: update # Общая настройка по заданию
     properties:
       hibernate:
         format_sql: true
+  # Переносим JWT сюда, но секрет в продакшене перекроем переменной
+  security:
+    jwt:
+      secret: "yourVeryLongAndRandomSecretKeyHere1234567890ABCDEF1234567890GHIJKLMNOP"
+      expiration: 3600000
+
+sentry:
+  dsn: https://3280b4bdf1a4aacf6efaa06909741991@o4510912499613696.ingest.de.sentry.io/4510912512655440
+  send-default-pii: true
+  traces-sample-rate: 1.0
+
+
+
 logging:
   level:
     root: INFO
     org.hibernate: ERROR
-    # Это отключит логи самого движка Hibernate
-    org.hibernate.engine.query.spi.QueryPlanCache: ERROR
-
-sentry:
-  dsn: https://3280b4bdf1a4aacf6efaa06909741991@o4510912499613696.ingest.de.sentry.io/4510912512655440
-  # Отправка данных о пользователе (IP, заголовки)
-  send-default-pii: true
-  # Процент записываемых транзакций для мониторинга производительности (1.0 = 100%)
-  traces-sample-rate: 1.0

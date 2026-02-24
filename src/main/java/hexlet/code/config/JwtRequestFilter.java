@@ -37,7 +37,7 @@ public final class JwtRequestFilter extends OncePerRequestFilter {
      * @return true, если фильтр должен быть пропущен для этого запроса, иначе false
      */
     @Override
-    protected boolean shouldNotFilter(HttpServletRequest request) {
+    public boolean shouldNotFilter(HttpServletRequest request) {
         AntPathMatcher pathMatcher = new AntPathMatcher();
         String path = request.getServletPath();
 
@@ -61,9 +61,9 @@ public final class JwtRequestFilter extends OncePerRequestFilter {
      * @throws IOException      если возникает ошибка ввода-вывода при обработке запроса/ответа
      */
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain chain)
+    public void doFilterInternal(HttpServletRequest request,
+                                 HttpServletResponse response,
+                                 FilterChain chain)
             throws ServletException, IOException {
 
         String header = request.getHeader("Authorization");
@@ -73,7 +73,7 @@ public final class JwtRequestFilter extends OncePerRequestFilter {
             String token = header.substring(7);
             log.debug("Extracted token: '{}'", token);
 
-            if (token == null || token.isEmpty() || "null".equals(token)) {
+            if (token == null || token.isBlank() || "null".equals(token)) {
                 log.debug("Token is empty or string 'null', skipping authentication.");
                 chain.doFilter(request, response);
                 return;

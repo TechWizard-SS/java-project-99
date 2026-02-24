@@ -26,7 +26,7 @@ public class UserMapperTest extends BaseTest {
 
         var dto = userMapper.map(user);
         assertThat(dto.getFirstName()).isEqualTo("First");
-        // Проверяем, что в DTO нет пароля (если его нет в UserDTO)
+        // Проверяем, что в DTO нет пароля
 
         // CreateDTO -> Entity
         var createDto = new UserCreateDTO();

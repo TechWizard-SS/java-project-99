@@ -7,17 +7,17 @@ spring:
     properties:
       hibernate:
         format_sql: true
-  # Переносим JWT сюда, но секрет в продакшене перекроем переменной
+
   security:
     jwt:
       secret: "yourVeryLongAndRandomSecretKeyHere1234567890ABCDEF1234567890GHIJKLMNOP"
       expiration: 3600000
 
+
 sentry:
   dsn: https://3280b4bdf1a4aacf6efaa06909741991@o4510912499613696.ingest.de.sentry.io/4510912512655440
-  send-default-pii: false
+  send-default-pii: true
   traces-sample-rate: 1.0
-
 
 
 logging:

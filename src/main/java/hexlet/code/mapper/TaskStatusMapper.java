@@ -1,9 +1,9 @@
 package hexlet.code.mapper;
 
 import hexlet.code.model.TaskStatus;
-import hexlet.code.model.dto.TaskStatus.TaskStatusCreateDTO;
-import hexlet.code.model.dto.TaskStatus.TaskStatusDTO;
-import hexlet.code.model.dto.TaskStatus.TaskStatusUpdateDTO;
+import hexlet.code.dto.TaskStatus.TaskStatusCreateDTO;
+import hexlet.code.dto.TaskStatus.TaskStatusDTO;
+import hexlet.code.dto.TaskStatus.TaskStatusUpdateDTO;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;

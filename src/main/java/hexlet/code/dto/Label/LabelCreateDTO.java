@@ -1,4 +1,4 @@
-package hexlet.code.model.dto.Label;
+package hexlet.code.dto.Label;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

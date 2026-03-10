@@ -1,11 +1,11 @@
 package hexlet.code.mapper;
 
+import jakarta.persistence.PersistenceContext;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 import org.mapstruct.TargetType;
 import org.mapstruct.Named;
 import jakarta.persistence.EntityManager;
-import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Маппер для преобразования между идентификаторами сущностей (ID) и самими объектами сущностей.
@@ -16,7 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 public abstract class ReferenceMapper {
 
-    @Autowired
+    @PersistenceContext
     private EntityManager entityManager;
 
     /**

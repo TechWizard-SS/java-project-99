@@ -2,7 +2,7 @@ package hexlet.code.mapper;
 
 import hexlet.code.BaseTest;
 import hexlet.code.model.TaskStatus;
-import hexlet.code.model.dto.TaskStatus.TaskStatusUpdateDTO;
+import hexlet.code.dto.TaskStatus.TaskStatusUpdateDTO;
 import org.junit.jupiter.api.Test;
 import org.openapitools.jackson.nullable.JsonNullable;
 import org.springframework.beans.factory.annotation.Autowired;

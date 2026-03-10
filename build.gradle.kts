@@ -19,14 +19,15 @@ java {
 }
 
 sentry {
-	// Включает загрузку исходного кода в Sentry для отображения контекста ошибки
-	includeSourceContext.set(true)
+	includeSourceContext = true
 
-	org.set("hexletio-0o")
-	projectName.set("java-spring-boot")
+	org = "hexlet99"
+	projectName = "java-spring-boot"
+	authToken = System.getenv("SENTRY_AUTH_TOKEN")
+}
 
-	// Берем токен из переменной окружения
-	authToken.set(System.getenv("SENTRY_AUTH_TOKEN"))
+tasks.sentryBundleSourcesJava {
+	enabled = System.getenv("SENTRY_AUTH_TOKEN") != null
 }
 
 configurations {

@@ -1,5 +1,6 @@
 package hexlet.code.exception;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -82,5 +83,15 @@ public final class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleResponseStatusException(ResponseStatusException ex) {
         return ResponseEntity.status(ex.getStatusCode())
                 .body(Map.of("error", ex.getReason() != null ? ex.getReason() : "Authentication failed"));
+    }
+
+    /**
+     * Обрабатывает исключение DataIntegrityViolationException.
+     * Возникает, если попытаться удалить сущность, на которую есть ссылки (Foreign Key constraint).
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Map<String, String>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(Map.of("error", "Cannot delete resource: it is currently in use"));
     }
 }

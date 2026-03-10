@@ -2,8 +2,8 @@ package hexlet.code.mapper;
 
 import hexlet.code.BaseTest;
 import hexlet.code.model.User;
-import hexlet.code.model.dto.User.UserCreateDTO;
-import hexlet.code.model.dto.User.UserUpdateDTO;
+import hexlet.code.dto.User.UserCreateDTO;
+import hexlet.code.dto.User.UserUpdateDTO;
 import org.junit.jupiter.api.Test;
 import org.openapitools.jackson.nullable.JsonNullable;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,7 +1,7 @@
 package hexlet.code.component;
 
 import hexlet.code.model.Task;
-import hexlet.code.model.dto.TaskParamsDTO;
+import hexlet.code.dto.TaskParamsDTO;
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;

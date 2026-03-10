@@ -2,7 +2,7 @@ package hexlet.code.mapper;
 
 import hexlet.code.BaseTest;
 import hexlet.code.model.Label;
-import hexlet.code.model.dto.Label.LabelUpdateDTO;
+import hexlet.code.dto.Label.LabelUpdateDTO;
 import org.junit.jupiter.api.Test;
 import org.openapitools.jackson.nullable.JsonNullable;
 import org.springframework.beans.factory.annotation.Autowired;

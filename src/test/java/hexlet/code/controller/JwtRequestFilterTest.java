@@ -16,14 +16,17 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
-
 import java.io.IOException;
 import java.util.List;
-
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.when;
 
-class JwtRequestFilterTest extends BaseTest {
+public final class JwtRequestFilterTest extends BaseTest {
 
     private JwtRequestFilter filter;
     private MyUserDetailsService userDetailsService;

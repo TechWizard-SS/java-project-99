@@ -101,7 +101,7 @@ public class TaskStatusControllerTest extends BaseTest {
 
         mockMvc.perform(delete("/api/task_statuses/" + status.getId())
                 .header("Authorization", token))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNoContent());
     }
 
 

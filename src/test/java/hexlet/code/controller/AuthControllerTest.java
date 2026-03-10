@@ -8,14 +8,12 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
 import java.util.Map;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class AuthControllerTest extends BaseTest {
+public final class AuthControllerTest extends BaseTest {
 
     @Autowired
     protected PasswordEncoder passwordEncoder;

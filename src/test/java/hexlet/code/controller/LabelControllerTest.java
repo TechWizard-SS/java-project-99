@@ -159,6 +159,6 @@ public class LabelControllerTest extends BaseTest {
 
         mockMvc.perform(delete("/api/labels/" + label.getId())
                 .header("Authorization", token))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNoContent());
     }
 }

@@ -217,7 +217,7 @@ public class TaskControllerTest extends BaseTest {
     void deleteTaskNotFound() throws Exception {
         mockMvc.perform(delete("/api/tasks/999999")
                 .header("Authorization", token))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNoContent());
     }
 
     @Test

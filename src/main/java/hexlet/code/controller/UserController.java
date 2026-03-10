@@ -1,14 +1,16 @@
 package hexlet.code.controller;
 
-import hexlet.code.model.dto.User.UserCreateDTO;
-import hexlet.code.model.dto.User.UserDTO;
-import hexlet.code.model.dto.User.UserUpdateDTO;
+import hexlet.code.dto.User.UserCreateDTO;
+import hexlet.code.dto.User.UserDTO;
+import hexlet.code.dto.User.UserUpdateDTO;
 import hexlet.code.service.UserService;
+import hexlet.code.serviceImpl.UserServiceImpl;
 import hexlet.code.util.NamedRoutes;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -33,7 +35,7 @@ import io.sentry.Sentry;
 @RestController
 @RequestMapping(NamedRoutes.USERS)
 @RequiredArgsConstructor
-public final class UserController {
+public class UserController {
 
     private final UserService userService;
 
@@ -84,7 +86,7 @@ public final class UserController {
      * Требует аутентификации. Пользователь может обновлять только свои данные.
      * Принимает DTO с новыми данными и идентификатор пользователя.
      * Примечание: В текущей реализации {@code currentUser} не используется в вызове сервиса.
-     * Логика проверки доступа должна быть реализована в {@link UserService#update}.
+     * Логика проверки доступа должна быть реализована в {@link UserServiceImpl#update}.
      *
      * @param userData    DTO {@link UserUpdateDTO} с новыми данными пользователя
      * @param id          идентификатор обновляемого пользователя
@@ -93,6 +95,7 @@ public final class UserController {
      */
     @PutMapping(NamedRoutes.USER_ID)
     @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("@userRepository.findById(#id).get().getEmail() == authentication.name")
     public UserDTO update(@Valid @RequestBody UserUpdateDTO userData,
                           @PathVariable Long id,
                           @AuthenticationPrincipal UserDetails currentUser) {
@@ -104,27 +107,15 @@ public final class UserController {
      * Обрабатывает DELETE-запрос на удаление пользователя по его идентификатору.
      * Требует аутентификации. Пользователь может удалять только свой аккаунт.
      * Примечание: В текущей реализации {@code currentUser} не используется в вызове сервиса.
-     * Логика проверки доступа должна быть реализована в {@link UserService#delete}.
+     * Логика проверки доступа должна быть реализована в {@link UserServiceImpl#delete}.
      *
      * @param id          идентификатор удаляемого пользователя
-     * @param currentUser объект {@link UserDetails}, представляющий аутентифицированного пользователя
      * @throws ResponseStatusException с кодом 401 (UNAUTHORIZED), если пользователь не аутентифицирован
      */
     @DeleteMapping(NamedRoutes.USER_ID)
-    @ResponseStatus(HttpStatus.OK)
-    public void destroy(@PathVariable Long id,
-                        @AuthenticationPrincipal UserDetails currentUser) {
-
-        if (currentUser == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not authenticated");
-        }
-
-        try {
-            throw new Exception("Sentry Test: Удаление пользователя ID " + id);
-        } catch (Exception e) {
-            Sentry.captureException(e);
-        }
-
+    @PreAuthorize("@userRepository.findById(#id).get().getEmail() == authentication.name")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void destroy(@PathVariable Long id) {
         userService.delete(id);
     }
 }

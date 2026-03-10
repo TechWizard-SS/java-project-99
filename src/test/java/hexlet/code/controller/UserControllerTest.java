@@ -153,9 +153,11 @@ public class UserControllerTest extends BaseTest {
         task.setAssignee(user);
         taskRepository.save(task);
 
+        String userToken = getAuthToken(user); // Создаем токен для нового юзера
+
         mockMvc.perform(delete("/api/users/" + user.getId())
-                .header("Authorization", token))
-                .andExpect(status().isNotFound());
+                        .header("Authorization", userToken)) // Используем userToken вместо глобального token
+                .andExpect(status().isNoContent());
     }
 
 

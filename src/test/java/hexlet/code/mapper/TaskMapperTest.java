@@ -5,14 +5,14 @@ import hexlet.code.model.Label;
 import hexlet.code.model.Task;
 import hexlet.code.model.TaskStatus;
 import hexlet.code.model.User;
-import hexlet.code.model.dto.Label.LabelCreateDTO;
-import hexlet.code.model.dto.Label.LabelUpdateDTO;
-import hexlet.code.model.dto.Task.TaskCreateDTO;
-import hexlet.code.model.dto.Task.TaskUpdateDTO;
-import hexlet.code.model.dto.TaskStatus.TaskStatusCreateDTO;
-import hexlet.code.model.dto.TaskStatus.TaskStatusUpdateDTO;
-import hexlet.code.model.dto.User.UserCreateDTO;
-import hexlet.code.model.dto.User.UserUpdateDTO;
+import hexlet.code.dto.Label.LabelCreateDTO;
+import hexlet.code.dto.Label.LabelUpdateDTO;
+import hexlet.code.dto.Task.TaskCreateDTO;
+import hexlet.code.dto.Task.TaskUpdateDTO;
+import hexlet.code.dto.TaskStatus.TaskStatusCreateDTO;
+import hexlet.code.dto.TaskStatus.TaskStatusUpdateDTO;
+import hexlet.code.dto.User.UserCreateDTO;
+import hexlet.code.dto.User.UserUpdateDTO;
 import hexlet.code.repository.LabelRepository;
 import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.TaskStatusRepository;
@@ -26,7 +26,7 @@ import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class TaskMapperTest extends BaseTest {
+public final class TaskMapperTest extends BaseTest {
 
     @Autowired
     private UserMapper userMapper;

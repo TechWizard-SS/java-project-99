@@ -61,6 +61,9 @@ dependencies {
 	compileOnly("org.projectlombok:lombok")
 	annotationProcessor("org.projectlombok:lombok")
 
+	testCompileOnly ("org.projectlombok:lombok")
+	testAnnotationProcessor ("org.projectlombok:lombok")
+
 	// MapStruct (Важен порядок!)
 	implementation("org.mapstruct:mapstruct:1.5.5.Final")
 	annotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
@@ -75,6 +78,13 @@ dependencies {
 	testImplementation("org.springframework.security:spring-security-test")
 	testImplementation("org.instancio:instancio-junit:3.3.0")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	testImplementation ("org.springframework.security:spring-security-test")
+
+	// Для генерации реалистичных случайных данных
+	testImplementation ("net.datafaker:datafaker:2.4.0")
+
+	// Сравнивает два JSON-документа
+	testImplementation("net.javacrumbs.json-unit:json-unit-assertj:5.1.0")
 }
 
 checkstyle {

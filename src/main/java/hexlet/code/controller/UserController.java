@@ -4,7 +4,6 @@ import hexlet.code.dto.User.UserCreateDTO;
 import hexlet.code.dto.User.UserDTO;
 import hexlet.code.dto.User.UserUpdateDTO;
 import hexlet.code.service.UserService;
-import hexlet.code.serviceImpl.UserServiceImpl;
 import hexlet.code.util.NamedRoutes;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +21,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 
 /**
@@ -85,7 +83,6 @@ public class UserController {
      * Требует аутентификации. Пользователь может обновлять только свои данные.
      * Принимает DTO с новыми данными и идентификатор пользователя.
      * Примечание: В текущей реализации {@code currentUser} не используется в вызове сервиса.
-     * Логика проверки доступа должна быть реализована в {@link UserServiceImpl#update}.
      *
      * @param userData    DTO {@link UserUpdateDTO} с новыми данными пользователя
      * @param id          идентификатор обновляемого пользователя
@@ -106,10 +103,7 @@ public class UserController {
      * Обрабатывает DELETE-запрос на удаление пользователя по его идентификатору.
      * Требует аутентификации. Пользователь может удалять только свой аккаунт.
      * Примечание: В текущей реализации {@code currentUser} не используется в вызове сервиса.
-     * Логика проверки доступа должна быть реализована в {@link UserServiceImpl#delete}.
-     *
      * @param id          идентификатор удаляемого пользователя
-     * @throws ResponseStatusException с кодом 401 (UNAUTHORIZED), если пользователь не аутентифицирован
      */
     @DeleteMapping(NamedRoutes.USER_ID)
     @PreAuthorize("@userRepository.findById(#id).get().getEmail() == authentication.name")

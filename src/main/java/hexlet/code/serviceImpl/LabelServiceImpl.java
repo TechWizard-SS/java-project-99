@@ -6,7 +6,6 @@ import hexlet.code.dto.Label.LabelCreateDTO;
 import hexlet.code.dto.Label.LabelDTO;
 import hexlet.code.dto.Label.LabelUpdateDTO;
 import hexlet.code.repository.LabelRepository;
-import hexlet.code.repository.TaskRepository;
 import hexlet.code.service.LabelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,9 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 /**
- * Сервис для управления метками ({@link Label}).
  * Предоставляет методы для получения, создания, обновления и удаления меток.
- * Использует репозитории {@link LabelRepository} и {@link TaskRepository} для взаимодействия с базой данных.
+ * Использует репозитории {@link LabelRepository}.
  */
 @Service
 @Transactional(readOnly = true)

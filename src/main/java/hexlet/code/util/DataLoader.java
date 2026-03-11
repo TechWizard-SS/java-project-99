@@ -26,7 +26,7 @@ public final class DataLoader implements CommandLineRunner {
 
     // Spring возьмет значение из переменной ADMIN_PASSWORD.
     // Если она не задана, выдаст ошибку при старте.
-    @Value("${ADMIN_PASSWORD}")
+    @Value("${ADMIN_PASSWORD:qwerty}")
     private String adminPassword;
 
     @Override

@@ -18,7 +18,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.springframework.http.MediaType;
 import hexlet.code.util.NamedRoutes;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
 import java.util.Map;
 
 /**

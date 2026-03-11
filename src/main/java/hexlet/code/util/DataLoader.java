@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @RequiredArgsConstructor
-public class DataLoader implements CommandLineRunner {
+public final class DataLoader implements CommandLineRunner {
 
     @Autowired
     private final UserRepository userRepository;

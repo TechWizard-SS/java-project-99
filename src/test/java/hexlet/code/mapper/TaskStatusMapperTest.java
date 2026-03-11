@@ -6,7 +6,6 @@ import hexlet.code.dto.TaskStatus.TaskStatusUpdateDTO;
 import org.junit.jupiter.api.Test;
 import org.openapitools.jackson.nullable.JsonNullable;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class TaskStatusMapperTest extends BaseTest {

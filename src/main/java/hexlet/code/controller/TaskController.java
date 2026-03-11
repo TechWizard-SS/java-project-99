@@ -5,7 +5,6 @@ import hexlet.code.dto.Task.TaskDTO;
 import hexlet.code.dto.Task.TaskUpdateDTO;
 import hexlet.code.dto.TaskParamsDTO;
 import hexlet.code.service.TaskService;
-import hexlet.code.serviceImpl.TaskServiceImpl;
 import hexlet.code.util.NamedRoutes;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

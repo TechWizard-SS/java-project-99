@@ -4,7 +4,6 @@ import hexlet.code.dto.Label.LabelCreateDTO;
 import hexlet.code.dto.Label.LabelDTO;
 import hexlet.code.dto.Label.LabelUpdateDTO;
 import hexlet.code.service.LabelService;
-import hexlet.code.serviceImpl.LabelServiceImpl;
 import hexlet.code.util.NamedRoutes;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

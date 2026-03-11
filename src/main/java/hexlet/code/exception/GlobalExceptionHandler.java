@@ -66,28 +66,58 @@ public final class GlobalExceptionHandler {
 
 
 
-
+    /**
+     * Обрабатывает любые неожиданные {@link Exception}, не перехваченные другими обработчиками.
+     * Возвращает ответ с кодом состояния HTTP 500 (INTERNAL_SERVER_ERROR)
+     * и телом JSON, содержащим обобщённое сообщение об ошибке.
+     *
+     * @param ex исключение {@link Exception}, возникшее в приложении
+     * @return {@link ResponseEntity} с HTTP статусом 500 и обобщённым сообщением об ошибке
+     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleOtherExceptions(Exception ex) {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Internal server error"));
     }
 
+    /**
+     * Обрабатывает исключение {@link DuplicateResourceException}.
+     * Возвращает ответ с кодом состояния HTTP 409 (CONFLICT)
+     * и телом JSON, содержащим сообщение об ошибке из исключения.
+     *
+     * @param ex исключение {@link DuplicateResourceException}, возникшее в приложении
+     * @return {@link ResponseEntity} с HTTP статусом 409 и сообщением об ошибке
+     */
     @ExceptionHandler(DuplicateResourceException.class)
     public ResponseEntity<Map<String, String>> handleDuplicateResource(DuplicateResourceException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(Map.of("error", ex.getMessage()));
     }
 
+    /**
+     * Обрабатывает исключение {@link ResponseStatusException}.
+     * Возвращает ответ с кодом состояния и сообщением, указанными в исключении.
+     * Если сообщение (reason) в исключении равно null, используется резервное сообщение "Authentication failed".
+     *
+     * @param ex исключение {@link ResponseStatusException}, возникшее в приложении
+     * @return {@link ResponseEntity} с HTTP статусом из исключения и сообщением об ошибке
+     */
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<Map<String, String>> handleResponseStatusException(ResponseStatusException ex) {
         return ResponseEntity.status(ex.getStatusCode())
                 .body(Map.of("error", ex.getReason() != null ? ex.getReason() : "Authentication failed"));
     }
 
+
     /**
-     * Обрабатывает исключение DataIntegrityViolationException.
-     * Возникает, если попытаться удалить сущность, на которую есть ссылки (Foreign Key constraint).
+     * Обрабатывает исключение {@link DataIntegrityViolationException}.
+     * Это исключение обычно возникает при нарушении ограничений целостности данных в базе,
+     * например, при попытке удалить сущность, на которую ссылаются другие сущности.
+     * Возвращает ответ с кодом состояния HTTP 409 (CONFLICT)
+     * и телом JSON, содержащим сообщение об ошибке.
+     *
+     * @param ex исключение {@link DataIntegrityViolationException}, возникшее в приложении
+     * @return {@link ResponseEntity} с HTTP статусом 409 и сообщением об ошибке целостности данных
      */
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Map<String, String>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {

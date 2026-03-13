@@ -29,6 +29,7 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Label {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

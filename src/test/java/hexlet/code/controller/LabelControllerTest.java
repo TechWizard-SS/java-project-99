@@ -1,6 +1,9 @@
 package hexlet.code.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import hexlet.code.BaseTest;
+import hexlet.code.dto.Label.LabelDTO;
+import hexlet.code.mapper.LabelMapper;
 import hexlet.code.model.Label;
 import hexlet.code.model.Task;
 import hexlet.code.model.TaskStatus;
@@ -11,6 +14,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+
+import java.util.List;
 import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -40,6 +45,9 @@ public class LabelControllerTest extends BaseTest {
     @Autowired
     private TaskStatusRepository taskStatusRepository;
 
+    @Autowired
+    private LabelMapper labelMapper;
+
 
 
     /**
@@ -59,18 +67,31 @@ public class LabelControllerTest extends BaseTest {
 
     /**
      * Тестирует получение списка всех меток.
-     * Проверяет, что запрос возвращает статус 200 OK,
-     * содержит заголовок X-Total-Count и тело ответа содержит имя тестовой метки.
+     * Проверяет, что запрос возвращает статус 200 OK и заголовок X-Total-Count.
+     * Выполняет десериализацию ответа и сравнивает полученный список DTO
+     * с актуальным состоянием базы данных, проверяя полное соответствие
+     * всех объектов (за исключением полей с автоматической датой создания).
      */
     @Test
     public void testIndex() throws Exception {
-        var result = mockMvc.perform(get("/api/labels").header("Authorization", token))
+        var response = mockMvc.perform(get("/api/labels").header("Authorization", token))
                 .andExpect(status().isOk())
                 .andExpect(header().exists("X-Total-Count"))
-                .andReturn();
+                .andReturn()
+                .getResponse();
 
-        var body = result.getResponse().getContentAsString();
-        assertThat(body).contains("bug1");
+        var body = response.getContentAsString();
+
+        // 1. Фактический результат: получаем список DTO прямо из JSON ответа API
+        List<LabelDTO> actualDTOs = om.readValue(body, new TypeReference<>() { });
+
+        // 2. Ожидаемый результат: берем сущности из БД и превращаем их в DTO
+        List<LabelDTO> expectedDTOs = labelRepository.findAll().stream()
+                .map(labelMapper::map)
+                .toList();
+
+        // 3. Сравниваем списки DTO
+        assertThat(actualDTOs).containsExactlyInAnyOrderElementsOf(expectedDTOs);
     }
 
     /**

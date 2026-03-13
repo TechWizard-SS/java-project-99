@@ -1,6 +1,7 @@
 package hexlet.code.dto.Task;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,6 +10,7 @@ import java.util.Set;
 
 @Getter
 @Setter
+@EqualsAndHashCode
 public class TaskDTO {
     private Long id;
     private Long index;

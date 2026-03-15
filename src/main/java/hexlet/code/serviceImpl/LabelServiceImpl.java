@@ -1,15 +1,17 @@
 package hexlet.code.serviceImpl;
 
-import hexlet.code.exception.ResourceNotFoundException;
-import hexlet.code.mapper.LabelMapper;
 import hexlet.code.dto.Label.LabelCreateDTO;
 import hexlet.code.dto.Label.LabelDTO;
 import hexlet.code.dto.Label.LabelUpdateDTO;
+import hexlet.code.exception.ResourceNotFoundException;
+import hexlet.code.mapper.LabelMapper;
 import hexlet.code.repository.LabelRepository;
+import hexlet.code.repository.TaskRepository;
 import hexlet.code.service.LabelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 
 /**
@@ -22,6 +24,7 @@ import java.util.List;
 public class LabelServiceImpl implements LabelService {
     private final LabelRepository labelRepository;
     private final LabelMapper mapper;
+    private final TaskRepository taskRepository;
 
     /**
      * Возвращает список всех меток.
@@ -86,6 +89,13 @@ public class LabelServiceImpl implements LabelService {
     @Transactional
     @Override
     public void delete(Long id) {
+        var label = labelRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Label not found"));
+
+        if (taskRepository.existsByLabelsId(id)) {
+            throw new ResourceNotFoundException("Cannot delete label: it is used in tasks");
+        }
+
         labelRepository.deleteById(id);
     }
 }

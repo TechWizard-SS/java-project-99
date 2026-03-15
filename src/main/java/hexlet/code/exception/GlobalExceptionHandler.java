@@ -124,4 +124,6 @@ public final class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(Map.of("error", "Cannot delete resource: it is currently in use"));
     }
+
+
 }

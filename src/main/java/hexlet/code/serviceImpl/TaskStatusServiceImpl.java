@@ -62,9 +62,6 @@ public class TaskStatusServiceImpl implements TaskStatusService {
      */
     @Transactional
     public TaskStatusDTO create(TaskStatusCreateDTO statusData) {
-        if (taskStatusRepository.findBySlug(statusData.getSlug()).isPresent()) {
-            throw new ResourceNotFoundException("Slug already exists");
-        }
         var status = taskStatusMapper.map(statusData);
         taskStatusRepository.save(status);
         return taskStatusMapper.map(status);
@@ -107,8 +104,14 @@ public class TaskStatusServiceImpl implements TaskStatusService {
     @Transactional
     @Override
     public void delete(Long id) {
-        taskStatusRepository.deleteById(id);
-    }
+        var status = taskStatusRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Status not found"));
+
+        if (taskRepository.existsByTaskStatusId(id)) {
+            throw new ResourceNotFoundException("Cannot delete status: it is used in tasks");
+        }
+
+        taskStatusRepository.deleteById(id);    }
 
     /**
      * Находит статус задачи по её слагу.
@@ -121,6 +124,7 @@ public class TaskStatusServiceImpl implements TaskStatusService {
     public TaskStatusDTO findBySlug(String slug) {
         var status = taskStatusRepository.findBySlug(slug)
                 .orElseThrow(() -> new ResourceNotFoundException("Status with slug " + slug + " not found"));
+
         return taskStatusMapper.map(status);
     }
 }

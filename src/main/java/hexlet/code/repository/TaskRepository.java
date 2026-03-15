@@ -4,6 +4,7 @@ import hexlet.code.model.Task;
 import hexlet.code.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
@@ -19,10 +20,13 @@ public interface TaskRepository extends JpaRepository<Task, Long>, JpaSpecificat
 
     /**
      * Находит задачу по её названию.
+     * Возвращает задачу с предварительно загруженными связями {@code taskStatus} и {@code labels}.
      *
      * @param name название задачи для поиска
-     * @return {@link Optional}, содержащий найденную задачу, или {@link Optional#empty()}, если задача не найдена
+     * @return {@link Optional}, содержащий найденную задачу с загруженными {@code taskStatus} и {@code labels},
+     * если задача не найдена
      */
+    @Query("SELECT t FROM Task t JOIN FETCH t.taskStatus JOIN FETCH t.labels WHERE t.name = :name")
     Optional<Task> findByName(String name);
 
     /**

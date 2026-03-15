@@ -1,6 +1,8 @@
 package hexlet.code.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import hexlet.code.BaseTest;
+import hexlet.code.dto.Task.TaskDTO;
 import hexlet.code.model.Task;
 import hexlet.code.model.User;
 import hexlet.code.repository.TaskStatusRepository;
@@ -8,11 +10,13 @@ import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.LabelRepository;
 import hexlet.code.model.TaskStatus;
 import hexlet.code.model.Label;
+import hexlet.code.util.NamedRoutes;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -138,7 +142,6 @@ public class TaskControllerTest extends BaseTest {
         taskRepository.save(task);
 
         // 2. Данные для обновления (меняем только title)
-        // Благодаря JsonNullable в твоем маппере, описание не должно затереться
         var data = Map.of("title", "Updated Name");
 
         mockMvc.perform(put("/api/tasks/" + task.getId())
@@ -190,8 +193,6 @@ public class TaskControllerTest extends BaseTest {
     }
 
 
-    //---------------------
-
     @Test
     void getTaskNotFound() throws Exception {
         mockMvc.perform(get("/api/tasks/999999")
@@ -237,7 +238,7 @@ public class TaskControllerTest extends BaseTest {
                         .header("Authorization", token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].title").value("Task for Another"))
-                .andExpect(jsonPath("$.length()").value(1)); // Проверяем, что в списке только одна задача
+                .andExpect(jsonPath("$.length()").value(1));
     }
 
     @Test
@@ -280,5 +281,37 @@ public class TaskControllerTest extends BaseTest {
                         .header("Authorization", token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    public void testIndex() throws Exception {
+        TaskStatus status = new TaskStatus();
+        status.setName("New");
+        status.setSlug("new");
+        status = taskStatusRepository.save(status);
+
+        Task task = new Task();
+        task.setName("Task1");
+        task.setTaskStatus(status);
+        task.setAssignee(userRepository.findByEmail("hexlet1@example.com").orElseThrow());
+
+        taskRepository.save(task);
+
+        var response = mockMvc.perform(get(NamedRoutes.TASKS)
+                        .header("Authorization", token))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse();
+
+        List<TaskDTO> taskDtos = om.readValue(response.getContentAsString(), new TypeReference<>() { });
+
+        var tasksInDb = taskRepository.findAll();
+
+        assertThat(taskDtos).hasSize(tasksInDb.size());
+
+        var taskNames = taskDtos.stream()
+                .map(TaskDTO::getTitle)
+                .toList();
+        assertThat(taskNames).contains(task.getName());
     }
 }

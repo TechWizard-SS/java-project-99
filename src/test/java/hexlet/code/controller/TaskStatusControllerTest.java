@@ -58,7 +58,7 @@ public class TaskStatusControllerTest extends BaseTest {
                         .header("Authorization", token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(data)))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isConflict());
     }
 
     //--------------------------------------------------------
@@ -100,7 +100,7 @@ public class TaskStatusControllerTest extends BaseTest {
 
         mockMvc.perform(delete("/api/task_statuses/" + status.getId())
                 .header("Authorization", token))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isNotFound());
     }
 
 

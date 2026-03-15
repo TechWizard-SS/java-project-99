@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
 import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -18,7 +17,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-
 
 /**
  * Интеграционные тесты для контроллера {@link hexlet.code.controller.UserController}.
@@ -63,7 +61,7 @@ public class UserControllerTest extends BaseTest {
                 "password", "secret123"
         );
 
-        mockMvc.perform(post("/api/users")
+        mockMvc.perform(post("/api/users").header("Authorization", token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(data)))
                 .andExpect(status().isCreated());
@@ -157,7 +155,7 @@ public class UserControllerTest extends BaseTest {
 
         mockMvc.perform(delete("/api/users/" + user.getId())
                         .header("Authorization", userToken)) // Используем userToken вместо глобального token
-                .andExpect(status().isNoContent());
+                .andExpect(status().isNotFound());
     }
 
 
@@ -168,7 +166,7 @@ public class UserControllerTest extends BaseTest {
                 "password", "1"
         );
 
-        mockMvc.perform(post("/api/users")
+        mockMvc.perform(post("/api/users").header("Authorization", token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(data)))
                 .andExpect(status().isBadRequest());

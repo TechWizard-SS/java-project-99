@@ -1,15 +1,14 @@
 package hexlet.code.serviceImpl;
 
-import hexlet.code.exception.ResourceNotFoundException;
-import hexlet.code.mapper.UserMapper;
 import hexlet.code.dto.User.UserCreateDTO;
 import hexlet.code.dto.User.UserDTO;
 import hexlet.code.dto.User.UserUpdateDTO;
+import hexlet.code.exception.ResourceNotFoundException;
+import hexlet.code.mapper.UserMapper;
 import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.UserRepository;
 import hexlet.code.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -83,23 +82,22 @@ public class UserServiceImpl implements UserService {
      */
     @Transactional
     public UserDTO update(UserUpdateDTO userData, Long id) {
-        // 1. Получаем email текущего авторизованного пользователя
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-        var currentEmail = authentication.getName();
-
-        // 2. Находим пользователя, которого хотим обновить
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         userMapper.update(userData, user);
 
-        if (userData.getPassword() != null && userData.getPassword().isPresent()) {
-            var rawPassword = userData.getPassword().get();
-            user.setPassword(passwordEncoder.encode(rawPassword));
-        }
+        userData.getPassword().ifPresent(rawPassword -> {
+            if (rawPassword != null && !rawPassword.isBlank()) {
+                user.setPassword(passwordEncoder.encode(rawPassword));
+            }
+        });
+
+
         userRepository.save(user);
         return userMapper.map(user);
     }
+
     /**
      * Удаляет пользователя по его идентификатору.
      * Перед удалением проверяет, назначены ли пользователю какие-либо задачи.
@@ -112,6 +110,10 @@ public class UserServiceImpl implements UserService {
     public void delete(Long id) {
         var user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (taskRepository.existsByAssigneeId(id)) {
+            throw new ResourceNotFoundException("Cannot delete user: they are assigned to tasks");
+        }
 
         userRepository.deleteById(id);
     }

@@ -10,8 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -86,15 +84,13 @@ public class UserController {
      *
      * @param userData    DTO {@link UserUpdateDTO} с новыми данными пользователя
      * @param id          идентификатор обновляемого пользователя
-     * @param currentUser объект {@link UserDetails}, представляющий аутентифицированного пользователя
      * @return DTO обновлённого пользователя {@link UserDTO}
      */
     @PutMapping(NamedRoutes.USER_ID)
     @ResponseStatus(HttpStatus.OK)
     @PreAuthorize("@userRepository.findById(#id).get().getEmail() == authentication.name")
     public UserDTO update(@Valid @RequestBody UserUpdateDTO userData,
-                          @PathVariable Long id,
-                          @AuthenticationPrincipal UserDetails currentUser) {
+                          @PathVariable Long id) {
 
         return userService.update(userData, id);
     }

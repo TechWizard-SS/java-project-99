@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import hexlet.code.config.JwtUtil;
 import hexlet.code.config.MyUserDetailsService;
 import hexlet.code.model.User;
+import hexlet.code.repository.LabelRepository;
+import hexlet.code.repository.TaskRepository;
+import hexlet.code.repository.TaskStatusRepository;
 import hexlet.code.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +14,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.annotation.Transactional;
 import java.util.Collections;
 
 /**
@@ -27,7 +29,6 @@ import java.util.Collections;
  */
 @SpringBootTest(properties = "ADMIN_PASSWORD=password123")
 @AutoConfigureMockMvc
-@Transactional
 @ActiveProfiles("application-development")
 public abstract class BaseTest {
 
@@ -38,7 +39,7 @@ public abstract class BaseTest {
     protected MockMvc mockMvc;
 
     @Autowired
-    protected ObjectMapper om; // Для преобразования DTO в JSON
+    protected ObjectMapper om;
 
     @Autowired
     protected UserRepository userRepository;
@@ -47,6 +48,15 @@ public abstract class BaseTest {
     protected JwtUtil jwtUtil;
 
     protected String token;
+
+    @Autowired
+    protected TaskRepository taskRepository;
+
+    @Autowired
+    protected TaskStatusRepository taskStatusRepository;
+
+    @Autowired
+    protected LabelRepository labelRepository;
 
 
     /**
@@ -57,7 +67,6 @@ public abstract class BaseTest {
      * @return строка токена в формате "Bearer {token}"
      */
     protected String getAuthToken(User user) {
-        // Создаем UserDetails на основе сохраненного объекта, не дергая БД лишний раз
         var userDetails = org.springframework.security.core.userdetails.User.withUsername(user.getEmail())
                 .password(user.getPassword())
                 .authorities(Collections.emptyList())
@@ -73,6 +82,11 @@ public abstract class BaseTest {
      */
     @BeforeEach
     public void setup() {
+        taskRepository.deleteAll();
+        taskStatusRepository.deleteAll();
+        labelRepository.deleteAll();
+        userRepository.deleteAll();
+
         var user = userRepository.findByEmail("hexlet1@example.com")
                 .orElseGet(() -> {
                     var newUser = new User();
@@ -80,6 +94,6 @@ public abstract class BaseTest {
                     newUser.setPassword("password");
                     return userRepository.save(newUser);
                 });
-        token = getAuthToken(user); // Передаем объект, а не email
+        token = getAuthToken(user);
     }
 }

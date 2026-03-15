@@ -12,5 +12,5 @@ public class UserUpdateDTO {
     private JsonNullable<String> lastName;
     @Email
     private JsonNullable<String> email;
-    private JsonNullable<String> password;
+    private JsonNullable<String> password = JsonNullable.undefined();
 }

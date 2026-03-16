@@ -3,9 +3,8 @@ WORKDIR /app
 
 
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
-# Копируем файлы фронта (все, кроме того что в .dockerignore)
 COPY . .
 RUN npm run build
 

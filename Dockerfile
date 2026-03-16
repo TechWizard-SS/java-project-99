@@ -6,6 +6,6 @@ WORKDIR /app
 COPY . .
 
 RUN chmod +x ./gradlew
-RUN ./gradlew dependencies
+RUN /gradlew installDist
 
 CMD ./build/install/app/bin/app

@@ -1,36 +1,39 @@
-FROM node:20.6.1 AS frontend
+FROM node:20-alpine AS frontend
+WORKDIR /app
 
-WORKDIR /frontend
 
-COPY frontend/package*.json .
-
+COPY package*.json ./
 RUN npm ci
 
-COPY frontend /frontend
-
+# Копируем файлы фронта (все, кроме того что в .dockerignore)
+COPY . .
 RUN npm run build
 
-FROM eclipse-temurin:21-jdk
 
-RUN apt-get update && apt-get install -yq make unzip
+FROM gradle:8.5-jdk21-alpine AS builder
+WORKDIR /app
 
-WORKDIR /backend
 
-COPY gradle gradle
-COPY build.gradle.kts .
-COPY settings.gradle.kts .
-COPY gradlew .
+COPY build.gradle.kts settings.gradle.kts gradlew ./
+COPY gradle ./gradle
 
-RUN ./gradlew --no-daemon dependencies
 
-COPY lombok.config .
-COPY src src
+COPY src ./src
 
-COPY --from=frontend /frontend/dist /backend/src/main/resources/static
 
-RUN ./gradlew --no-daemon build
+COPY --from=frontend /app/dist ./src/main/resources/static
 
-ENV JAVA_OPTS "-Xmx512M -Xms512M"
+RUN ./gradlew --no-daemon bootJar -x test -Dorg.gradle.jvmargs="-Xmx256m"
+
+
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+
+
+COPY --from=builder /app/build/libs/*.jar app.jar
+
+
+ENV JAVA_OPTS="-Xmx300M -Xms300M"
 EXPOSE 8080
 
-CMD java -jar build/libs/HexletSpringBlog-1.0-SNAPSHOT.jar
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

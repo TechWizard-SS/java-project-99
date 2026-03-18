@@ -11,11 +11,12 @@
 [![Technical Debt](https://sonarcloud.io/api/project_badges/measure?project=TechWizard-SS_java-project-99&metric=sqale_index)](https://sonarcloud.io/summary/new_code?id=TechWizard-SS_java-project-99)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=TechWizard-SS_java-project-99&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=TechWizard-SS_java-project-99)
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=TechWizard-SS_java-project-99&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=TechWizard-SS_java-project-99)
-
+![Deploy Status](https://img.shields.io/badge/Render-Deployed-brightgreen)
 
 # Task Manager (Менеджер задач)
 
-Современное веб-приложение для управления задачами, пользователями и метками. Позволяет организовывать рабочий процесс, назначать исполнителей и отслеживать статусы выполнения.
+**Live Demo:** [https://java-project-99-w1aw.onrender.com](https://java-project-99-w1aw.onrender.com)
+https://java-project-99-w1aw.onrender.com
 
 ## 🚀 Стек технологий
 

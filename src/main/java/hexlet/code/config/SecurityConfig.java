@@ -1,6 +1,7 @@
 package hexlet.code.config;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -124,5 +125,17 @@ public class SecurityConfig {
         authProvider.setUserDetailsService(myUserDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
+    }
+
+    /**
+     * Бин, который предотвращает автоматическую регистрацию фильтра в контейнере сервлетов.
+     *
+     * @return экземпляр {@link FilterRegistrationBean}
+     */
+    @Bean
+    public FilterRegistrationBean<JwtRequestFilter> jwtFilterRegistration(JwtRequestFilter filter) {
+        FilterRegistrationBean<JwtRequestFilter> registration = new FilterRegistrationBean<>(filter);
+        registration.setEnabled(false); // Вот это отключает автоматическую "вторую" регистрацию
+        return registration;
     }
 }

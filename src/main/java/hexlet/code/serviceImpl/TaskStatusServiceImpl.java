@@ -104,14 +104,11 @@ public class TaskStatusServiceImpl implements TaskStatusService {
     @Transactional
     @Override
     public void delete(Long id) {
-        var status = taskStatusRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Status not found"));
-
-        if (taskRepository.existsByTaskStatusId(id)) {
-            throw new ResourceNotFoundException("Cannot delete status: it is used in tasks");
+        if (!taskStatusRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Task status not found");
         }
-
-        taskStatusRepository.deleteById(id);    }
+        taskStatusRepository.deleteById(id);
+    }
 
     /**
      * Находит статус задачи по её слагу.

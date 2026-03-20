@@ -77,7 +77,7 @@ public final class JwtRequestFilterTest extends BaseTest {
 
     @Test
     void testSecurityContextAlreadyHasAuthentication() throws ServletException, IOException {
-        // Имитируем, что пользователь уже залогинен (например, другим фильтром)
+        // Имитируем, что пользователь уже залогинен
         var existingAuth = mock(org.springframework.security.core.Authentication.class);
         SecurityContextHolder.getContext().setAuthentication(existingAuth);
 

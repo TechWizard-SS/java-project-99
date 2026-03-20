@@ -82,15 +82,12 @@ public class LabelControllerTest extends BaseTest {
 
         var body = response.getContentAsString();
 
-        // 1. Фактический результат: получаем список DTO прямо из JSON ответа API
         List<LabelDTO> actualDTOs = om.readValue(body, new TypeReference<>() { });
 
-        // 2. Ожидаемый результат: берем сущности из БД и превращаем их в DTO
         List<LabelDTO> expectedDTOs = labelRepository.findAll().stream()
                 .map(labelMapper::map)
                 .toList();
 
-        // 3. Сравниваем списки DTO
         assertThat(actualDTOs).containsExactlyInAnyOrderElementsOf(expectedDTOs);
     }
 
@@ -180,6 +177,6 @@ public class LabelControllerTest extends BaseTest {
 
         mockMvc.perform(delete("/api/labels/" + label.getId())
                 .header("Authorization", token))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isConflict());
     }
 }

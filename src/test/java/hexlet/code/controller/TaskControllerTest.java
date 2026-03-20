@@ -108,18 +108,15 @@ public class TaskControllerTest extends BaseTest {
      */
     @Test
     public void testShowTask() throws Exception {
-        // 1. Создаем задачу в БД
         var task = new Task();
         task.setName("Specific Task");
         task.setDescription("Specific Description");
-        task.setTaskStatus(testStatus); // testStatus из твоего @BeforeEach
+        task.setTaskStatus(testStatus);
         taskRepository.save(task);
 
-        // 2. Выполняем GET запрос
         mockMvc.perform(get("/api/tasks/" + task.getId())
                         .header("Authorization", token))
                 .andExpect(status().isOk())
-                // Проверяем, что в JSON пришли правильные поля title и content
                 .andExpect(jsonPath("$.title").value("Specific Task"))
                 .andExpect(jsonPath("$.content").value("Specific Description"));
     }
@@ -134,14 +131,12 @@ public class TaskControllerTest extends BaseTest {
      */
     @Test
     public void testUpdateTask() throws Exception {
-        // 1. Создаем задачу в базе
         var task = new Task();
         task.setName("Initial Name");
         task.setDescription("Initial Description");
         task.setTaskStatus(testStatus);
         taskRepository.save(task);
 
-        // 2. Данные для обновления (меняем только title)
         var data = Map.of("title", "Updated Name");
 
         mockMvc.perform(put("/api/tasks/" + task.getId())
@@ -150,7 +145,6 @@ public class TaskControllerTest extends BaseTest {
                         .content(om.writeValueAsString(data)))
                 .andExpect(status().isOk());
 
-        // 3. Проверяем изменения в базе
         var updatedTask = taskRepository.findById(task.getId()).get();
         assertThat(updatedTask.getName()).isEqualTo("Updated Name"); // Изменилось
         assertThat(updatedTask.getDescription()).isEqualTo("Initial Description"); // Осталось прежним!
@@ -171,7 +165,6 @@ public class TaskControllerTest extends BaseTest {
         task.setTaskStatus(testStatus);
         taskRepository.save(task);
 
-        // Фильтруем по части названия и слагу статуса
         mockMvc.perform(get("/api/tasks?titleCont=Search&status=" + testStatus.getSlug())
                         .header("Authorization", token))
                 .andExpect(status().isOk())
@@ -185,11 +178,10 @@ public class TaskControllerTest extends BaseTest {
      */
     @Test
     public void testUnauthenticated() throws Exception {
-        // Пытаемся создать задачу БЕЗ заголовка Authorization
         mockMvc.perform(post("/api/tasks")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(om.writeValueAsString(Map.of("title", "fail"))))
-                .andExpect(status().isUnauthorized()); // 401
+                .andExpect(status().isUnauthorized());
     }
 
 
@@ -217,12 +209,11 @@ public class TaskControllerTest extends BaseTest {
     void deleteTaskNotFound() throws Exception {
         mockMvc.perform(delete("/api/tasks/999999")
                 .header("Authorization", token))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isNotFound());
     }
 
     @Test
     void testFilterByAssignee() throws Exception {
-        // Создаем еще одного пользователя, чтобы убедиться, что фильтр работает
         var anotherUser = new User();
         anotherUser.setEmail("another@mail.com");
         anotherUser.setPassword(passwordEncoder.encode("password"));
@@ -246,7 +237,7 @@ public class TaskControllerTest extends BaseTest {
         var task = new Task();
         task.setName("Labeled Task");
         task.setTaskStatus(testStatus);
-        task.getLabels().add(testLabel); // testLabel из твоего @BeforeEach
+        task.getLabels().add(testLabel);
         taskRepository.save(task);
 
         mockMvc.perform(get("/api/tasks?labelId=" + testLabel.getId())

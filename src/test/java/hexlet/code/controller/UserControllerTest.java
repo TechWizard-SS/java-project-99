@@ -1,5 +1,6 @@
 package hexlet.code.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import hexlet.code.BaseTest;
 import hexlet.code.model.Task;
 import hexlet.code.model.TaskStatus;
@@ -10,6 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.List;
 import java.util.Map;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -42,8 +45,17 @@ public class UserControllerTest extends BaseTest {
      */
     @Test
     public void testIndex() throws Exception {
-        mockMvc.perform(get("/api/users").header("Authorization", token))
-                .andExpect(status().isOk());
+        var result = mockMvc.perform(get("/api/users").header("Authorization", token))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        var body = result.getResponse().getContentAsString();
+        List<User> users = om.readValue(body, new TypeReference<>() {});
+        var expectedUsers = userRepository.findAll();
+
+        assertThat(users).hasSize(expectedUsers.size());
+        assertThat(users).extracting(User::getEmail)
+                .containsExactlyInAnyOrderElementsOf(expectedUsers.stream().map(User::getEmail).toList());
     }
 
     /**
@@ -108,8 +120,6 @@ public class UserControllerTest extends BaseTest {
     }
 
 
-    //---------------------------------
-
     @Test
     void createUserWithDuplicateEmailShouldReturnNotFound() throws Exception {
         User user = new User();
@@ -151,11 +161,11 @@ public class UserControllerTest extends BaseTest {
         task.setAssignee(user);
         taskRepository.save(task);
 
-        String userToken = getAuthToken(user); // Создаем токен для нового юзера
+        String userToken = getAuthToken(user);
 
         mockMvc.perform(delete("/api/users/" + user.getId())
-                        .header("Authorization", userToken)) // Используем userToken вместо глобального token
-                .andExpect(status().isNotFound());
+                        .header("Authorization", userToken))
+                .andExpect(status().isConflict());
     }
 
 
@@ -187,4 +197,5 @@ public class UserControllerTest extends BaseTest {
                         .content(om.writeValueAsString(data)))
                 .andExpect(status().isForbidden());
     }
+
 }

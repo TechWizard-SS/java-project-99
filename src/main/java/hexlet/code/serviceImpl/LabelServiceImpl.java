@@ -89,13 +89,9 @@ public class LabelServiceImpl implements LabelService {
     @Transactional
     @Override
     public void delete(Long id) {
-        var label = labelRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Label not found"));
-
-        if (taskRepository.existsByLabelsId(id)) {
-            throw new ResourceNotFoundException("Cannot delete label: it is used in tasks");
+        if (!labelRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Label not found");
         }
-
         labelRepository.deleteById(id);
     }
 }

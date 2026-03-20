@@ -108,11 +108,8 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public void delete(Long id) {
-        var user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
-        if (taskRepository.existsByAssigneeId(id)) {
-            throw new ResourceNotFoundException("Cannot delete user: they are assigned to tasks");
+        if (!userRepository.existsById(id)) {
+            throw new ResourceNotFoundException("User not found");
         }
 
         userRepository.deleteById(id);

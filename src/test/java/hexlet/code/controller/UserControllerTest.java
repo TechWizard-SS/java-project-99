@@ -53,7 +53,7 @@ public class UserControllerTest extends BaseTest {
                 .andReturn();
 
         var body = result.getResponse().getContentAsString();
-        List<User> users = om.readValue(body, new TypeReference<>() {});
+        List<User> users = om.readValue(body, new TypeReference<>() { });
         var expectedUsers = userRepository.findAll();
 
         assertThat(users).hasSize(expectedUsers.size());

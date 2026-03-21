@@ -1,7 +1,6 @@
 package hexlet.code.config;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -63,6 +62,7 @@ public class SecurityConfig {
      * Отключает CSRF, включает CORS, отключает сессии, настраивает доступ к маршрутам
      * и добавляет JWT-фильтр.
      *
+     * @param jwtUtil утилита для парсинга, валидации и извлечения данных из JWT-токена
      * @param http билдер {@link HttpSecurity} для настройки параметров HTTP-безопасности
      * @return настроенная цепочка фильтров безопасности {@link SecurityFilterChain}
      * @throws Exception если цепочка фильтров не может быть построена
@@ -90,7 +90,8 @@ public class SecurityConfig {
                         ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 .authenticationProvider(authenticationProvider())
                 //.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(jwtRequestFilter(myUserDetailsService, jwtUtil), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtRequestFilter(myUserDetailsService, jwtUtil),
+                        UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 

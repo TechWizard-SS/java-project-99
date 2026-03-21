@@ -5,7 +5,6 @@ import hexlet.code.dto.User.UserDTO;
 import hexlet.code.dto.User.UserUpdateDTO;
 import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.mapper.UserMapper;
-import hexlet.code.repository.TaskRepository;
 import hexlet.code.repository.UserRepository;
 import hexlet.code.service.UserService;
 import lombok.RequiredArgsConstructor;

@@ -6,7 +6,6 @@ import hexlet.code.dto.Label.LabelUpdateDTO;
 import hexlet.code.exception.ResourceNotFoundException;
 import hexlet.code.mapper.LabelMapper;
 import hexlet.code.repository.LabelRepository;
-import hexlet.code.repository.TaskRepository;
 import hexlet.code.service.LabelService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

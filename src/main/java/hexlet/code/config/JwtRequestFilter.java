@@ -21,7 +21,6 @@ import java.io.IOException;
  * в SecurityContext для дальнейшей авторизации.
  * Запросы к маршрутам, указанным в {@link #shouldNotFilter}, не проходят через этот фильтр.
  */
-@Component
 @RequiredArgsConstructor
 @Slf4j
 public final class JwtRequestFilter extends OncePerRequestFilter {

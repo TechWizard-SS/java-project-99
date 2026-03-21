@@ -1,6 +1,7 @@
 package hexlet.code.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import hexlet.code.BaseTest;
 import hexlet.code.model.Task;
 import hexlet.code.model.TaskStatus;
@@ -38,6 +39,8 @@ public class UserControllerTest extends BaseTest {
 
     @Autowired
     TaskStatusRepository taskStatusRepository;
+
+    @Autowired private ObjectMapper objectMapper;
     /**
      * Тестирует получение списка всех пользователей.
      * Отправляет GET-запрос к '/api/users' с токеном аутентификации.
@@ -129,17 +132,17 @@ public class UserControllerTest extends BaseTest {
         user.setPassword(passwordEncoder.encode("123456"));
         userRepository.save(user);
 
-        String json = "{"
-                + "\"firstName\":\"Hex\","
-                + "\"lastName\":\"Let\","
-                + "\"email\":\"test@mail.com\","
-                + "\"password\":\"123456\""
-                + "}";
+        var requestData = Map.of(
+                "firstName", "Hex",
+                "lastName", "Let",
+                "email", "test@mail.com",
+                "password", "123456"
+        );
 
         mockMvc.perform(post("/api/users")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(json)
-                .header("Authorization", token))
+                        .content(objectMapper.writeValueAsString(requestData))
+                        .header("Authorization", token))
                 .andExpect(status().isConflict());
     }
 

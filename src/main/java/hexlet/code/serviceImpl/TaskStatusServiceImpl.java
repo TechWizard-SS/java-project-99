@@ -82,11 +82,12 @@ public class TaskStatusServiceImpl implements TaskStatusService {
         var status = taskStatusRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Status not found"));
 
-        if (statusData.getSlug() != null && statusData.getSlug().isPresent()) {
-            String newSlug = statusData.getSlug().get();
-            if (!newSlug.equals(status.getSlug()) && taskStatusRepository.findBySlug(newSlug).isPresent()) {
-                throw new ResourceNotFoundException("Slug already exists");
-            }
+        if (statusData.getSlug() != null) {
+            statusData.getSlug().ifPresent(newSlug -> {
+                if (!newSlug.equals(status.getSlug()) && taskStatusRepository.findBySlug(newSlug).isPresent()) {
+                    throw new ResourceNotFoundException("Slug already exists");
+                }
+            });
         }
 
         taskStatusMapper.update(statusData, status);

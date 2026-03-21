@@ -24,7 +24,6 @@ import java.util.List;
 public class LabelServiceImpl implements LabelService {
     private final LabelRepository labelRepository;
     private final LabelMapper mapper;
-    private final TaskRepository taskRepository;
 
     /**
      * Возвращает список всех меток.

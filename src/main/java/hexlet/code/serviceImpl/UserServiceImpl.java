@@ -19,7 +19,7 @@ import java.util.List;
  * Предоставляет методы для получения списка пользователей, получения,
  * создания, обновления и удаления отдельных пользователей.
  * Проверяет уникальность email при создании и наличии связанных задач при удалении.
- * Использует репозитории {@link UserRepository} и {@link TaskRepository},
+ * Использует репозитории {@link UserRepository},
  * а также {@link PasswordEncoder} для хеширования паролей.
  */
 @Service
@@ -30,7 +30,6 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
-    private final TaskRepository taskRepository;
 
     /**
      * Возвращает список всех пользователей.

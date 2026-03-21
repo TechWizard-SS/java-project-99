@@ -34,7 +34,6 @@ import java.util.List;
 public class SecurityConfig {
 
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-    private final JwtRequestFilter jwtRequestFilter;
     private final MyUserDetailsService myUserDetailsService;
 
     /**
@@ -69,7 +68,7 @@ public class SecurityConfig {
      * @throws Exception если цепочка фильтров не может быть построена
      */
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtUtil jwtUtil) throws Exception {
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
@@ -90,7 +89,8 @@ public class SecurityConfig {
                 .exceptionHandling(ex ->
                         ex.authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
+                //.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtRequestFilter(myUserDetailsService, jwtUtil), UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
@@ -127,15 +127,45 @@ public class SecurityConfig {
         return authProvider;
     }
 
+//    /**
+//     * Регистрирует {@link JwtRequestFilter} в контексте приложения с отключением
+//     * автоматической регистрации в контейнере сервлетов.
+//     * <p>
+//     * Данное переопределение необходимо для предотвращения дублирования фильтра:
+//     * без явного отключения автоматической регистрации фильтр может быть применён
+//     * дважды — как через механизм автоконфигурации Spring Boot, так и через
+//     * {@link SecurityFilterChain}, что приводит к некорректной обработке цепочки фильтров.
+//     *
+//     * @param filter экземпляр {@link JwtRequestFilter}, содержащий логику валидации JWT-токенов
+//     * @return настроенный {@link FilterRegistrationBean} с параметром {@code enabled = false},
+//     *         исключающий автоматическое добавление фильтра в контейнер сервлетов
+//     * @see SecurityFilterChain
+//     * @see FilterRegistrationBean#setEnabled(boolean)
+//     */
+//    @Bean
+//    public FilterRegistrationBean<JwtRequestFilter> jwtFilterRegistration(JwtRequestFilter filter) {
+//        FilterRegistrationBean<JwtRequestFilter> registration = new FilterRegistrationBean<>(filter);
+//        registration.setEnabled(false);
+//        return registration;
+//    }
+
     /**
-     * Бин, который предотвращает автоматическую регистрацию фильтра в контейнере сервлетов.
+     * Регистрирует {@link JwtRequestFilter} как бин в контексте приложения.
+     * <p>
+     * Фильтр отвечает за перехват HTTP-запросов, извлечение JWT-токена из заголовка
+     * {@code Authorization} и аутентификацию пользователя через
+     * {@link MyUserDetailsService}. При успешной валидации токена в контекст безопасности
+     * устанавливается {@link org.springframework.security.authentication.UsernamePasswordAuthenticationToken}.
      *
-     * @return экземпляр {@link FilterRegistrationBean}
+     * @param userDetailsService сервис для загрузки данных пользователя по идентификатору из токена
+     * @param jwtUtil утилита для парсинга, валидации и извлечения данных из JWT-токена
+     * @return настроенный экземпляр {@link JwtRequestFilter}, готовый к интеграции в
+     *         {@link org.springframework.security.web.SecurityFilterChain}
+     * @see org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
+     * @see io.jsonwebtoken.Jwts
      */
     @Bean
-    public FilterRegistrationBean<JwtRequestFilter> jwtFilterRegistration(JwtRequestFilter filter) {
-        FilterRegistrationBean<JwtRequestFilter> registration = new FilterRegistrationBean<>(filter);
-        registration.setEnabled(false); // Вот это отключает автоматическую "вторую" регистрацию
-        return registration;
+    public JwtRequestFilter jwtRequestFilter(MyUserDetailsService userDetailsService, JwtUtil jwtUtil) {
+        return new JwtRequestFilter(userDetailsService, jwtUtil);
     }
 }
